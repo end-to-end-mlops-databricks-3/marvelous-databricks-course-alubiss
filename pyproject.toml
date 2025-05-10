@@ -33,6 +33,7 @@ test = [
     "delta-spark==3.3.0",
     "pyspark==3.5.3",
     "pytest>=8.3.5",
+    "pre-commit>=4.1.0, <5",
 ]
 
 [build-system]
