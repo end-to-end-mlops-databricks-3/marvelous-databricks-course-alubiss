@@ -14,4 +14,5 @@ databricks-feature-lookup==1.2.0
 databricks-sdk==0.32.0
 pydantic==2.9.2
 loguru==0.7.3
+pytest==7.4.4
 marvelous

@@ -1,7 +1,4 @@
 """Data preprocessing module."""
-
-import datetime
-
 import pandas as pd
 import numpy as np
 from pyspark.sql import SparkSession
@@ -27,6 +24,8 @@ class DataProcessor:
 
         This method handles missing values, converts data types, and performs feature engineering.
         """
+
+        self.df['arrival_date'] = '01'
         # Handle date features
         self.df['arrival_full_date'] = pd.to_datetime(
             self.df['arrival_date'].astype(str) + '-' +
@@ -41,10 +40,6 @@ class DataProcessor:
         year_dummies = pd.get_dummies(self.df['arrival_year'], prefix='year')
         self.df = pd.concat([self.df, year_dummies], axis=1)
 
-        today = datetime.now()
-        self.df['number_of_days_from_today'] = (self.df['arrival_full_date'] - today).dt.days
-
-
         self.df['is_first_quarter'] = self.df['arrival_month'].apply(lambda x: 1 if x in [1, 2, 3] else 0)
         self.df['is_second_quarter'] = self.df['arrival_month'].apply(lambda x: 1 if x in [4, 5, 6] else 0)
         self.df['is_third_quarter'] = self.df['arrival_month'].apply(lambda x: 1 if x in [7, 8, 9] else 0)
@@ -52,11 +47,9 @@ class DataProcessor:
 
 
         created_columns = [
-            'arrival_full_date',
             'month_sin',
             'month_cos',
             *year_dummies.columns.tolist(),
-            'number_of_days_from_today',
             'is_first_quarter',
             'is_second_quarter',
             'is_third_quarter',
