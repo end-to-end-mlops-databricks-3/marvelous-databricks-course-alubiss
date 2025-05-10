@@ -1,4 +1,5 @@
 """Data preprocessing module."""
+
 import numpy as np
 import pandas as pd
 from pyspark.sql import SparkSession
@@ -24,30 +25,32 @@ class DataProcessor:
 
         This method handles missing values, converts data types, and performs feature engineering.
         """
-        self.df['arrival_date'] = '01'
+        self.df["arrival_date"] = "01"
         # Handle date features
-        self.df['arrival_full_date'] = pd.to_datetime(
-            self.df['arrival_date'].astype(str) + '-' +
-            self.df['arrival_month'].astype(str) + '-' +
-            self.df['arrival_year'].astype(str),
-            format='%d-%m-%Y'
+        self.df["arrival_full_date"] = pd.to_datetime(
+            self.df["arrival_date"].astype(str)
+            + "-"
+            + self.df["arrival_month"].astype(str)
+            + "-"
+            + self.df["arrival_year"].astype(str),
+            format="%d-%m-%Y",
         )
 
-        self.df['month_sin'] = np.sin(2 * np.pi * self.df['arrival_month'] / 12)
-        self.df['month_cos'] = np.cos(2 * np.pi * self.df['arrival_month'] / 12)
+        self.df["month_sin"] = np.sin(2 * np.pi * self.df["arrival_month"] / 12)
+        self.df["month_cos"] = np.cos(2 * np.pi * self.df["arrival_month"] / 12)
 
-        self.df['is_first_quarter'] = self.df['arrival_month'].apply(lambda x: 1 if x in [1, 2, 3] else 0)
-        self.df['is_second_quarter'] = self.df['arrival_month'].apply(lambda x: 1 if x in [4, 5, 6] else 0)
-        self.df['is_third_quarter'] = self.df['arrival_month'].apply(lambda x: 1 if x in [7, 8, 9] else 0)
-        self.df['is_fourth_quarter'] = self.df['arrival_month'].apply(lambda x: 1 if x in [10, 11, 12] else 0)
+        self.df["is_first_quarter"] = self.df["arrival_month"].apply(lambda x: 1 if x in [1, 2, 3] else 0)
+        self.df["is_second_quarter"] = self.df["arrival_month"].apply(lambda x: 1 if x in [4, 5, 6] else 0)
+        self.df["is_third_quarter"] = self.df["arrival_month"].apply(lambda x: 1 if x in [7, 8, 9] else 0)
+        self.df["is_fourth_quarter"] = self.df["arrival_month"].apply(lambda x: 1 if x in [10, 11, 12] else 0)
 
         created_columns = [
-            'month_sin',
-            'month_cos',
-            'is_first_quarter',
-            'is_second_quarter',
-            'is_third_quarter',
-            'is_fourth_quarter'
+            "month_sin",
+            "month_cos",
+            "is_first_quarter",
+            "is_second_quarter",
+            "is_third_quarter",
+            "is_fourth_quarter",
         ]
 
         # Handle numeric features

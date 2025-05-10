@@ -1,4 +1,5 @@
 """Unit tests for DataProcessor."""
+
 import os
 import sys
 
@@ -97,13 +98,13 @@ def test_column_selection(sample_data: pd.DataFrame, config: ProjectConfig, spar
     processor.preprocess()
 
     created_columns = [
-            'month_sin',
-            'month_cos',
-            'is_first_quarter',
-            'is_second_quarter',
-            'is_third_quarter',
-            'is_fourth_quarter'
-        ]
+        "month_sin",
+        "month_cos",
+        "is_first_quarter",
+        "is_second_quarter",
+        "is_third_quarter",
+        "is_fourth_quarter",
+    ]
 
     expected_columns = config.cat_features + config.num_features + [config.target, "Booking_ID"] + created_columns
     assert set(processor.df.columns) == set(expected_columns)
