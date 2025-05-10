@@ -1,0 +1,43 @@
+prd:
+  catalog_name: mlops_prd
+  schema_name: olalubic
+acc:
+  catalog_name: mlops_acc
+  schema_name: olalubic
+dev:
+  catalog_name: mlops_dev
+  schema_name: olalubic
+
+parameters:
+  learning_rate: 0.01
+  n_estimators: 1000
+  max_depth: 6
+
+id_cols:
+ - Booking_ID
+
+num_features:
+  - no_of_adults
+  - no_of_children
+  - no_of_weekend_nights
+  - no_of_week_nights
+  - lead_time
+  - repeated_guest
+  - no_of_previous_cancellations
+  - no_of_previous_bookings_not_canceled
+  - avg_price_per_room
+  - no_of_special_requests
+
+date_features:
+  - arrival_date
+  - arrival_year
+  - arrival_month
+
+cat_features:
+  - type_of_meal_plan
+  - required_car_parking_space
+  - room_type_reserved
+  - market_segment_type
+  - country
+
+target: booking_status
