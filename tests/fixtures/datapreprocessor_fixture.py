@@ -8,7 +8,7 @@ from pyspark.sql import SparkSession
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../src")))
 
 from hotel_reservations import PROJECT_DIR
 from hotel_reservations.config import ProjectConfig, Tags

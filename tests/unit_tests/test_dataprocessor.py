@@ -1,13 +1,18 @@
 """Unit tests for DataProcessor."""
+import sys
+import os
 
 import pandas as pd
 import pytest
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 from conftest import CATALOG_DIR
 from delta.tables import DeltaTable
 from pyspark.sql import SparkSession
 
-from house_price.config import ProjectConfig
-from house_price.data_processor import DataProcessor
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../src")))
+
+from hotel_reservations.config import ProjectConfig
+from hotel_reservations.data_processor import DataProcessor
 
 
 def test_data_ingestion(sample_data: pd.DataFrame) -> None:
@@ -53,9 +58,13 @@ def test_column_transformations(sample_data: pd.DataFrame, config: ProjectConfig
     processor = DataProcessor(pandas_df=sample_data, config=config, spark=spark_session)
     processor.preprocess()
 
-    assert "GarageYrBlt" not in processor.df.columns
-    assert processor.df["Id"].dtype == "object"
-    assert processor.df["MasVnrType"].dtype == "category"
+    assert "booking_status" not in processor.df.columns
+    assert processor.df["Booking_ID"].dtype == "object"
+    assert processor.df["type_of_meal_plan"].dtype == "category"
+    assert processor.df["required_car_parking_space"].dtype == "category"
+    assert processor.df["room_type_reserved"].dtype == "category"
+    assert processor.df["market_segment_type"].dtype == "category"
+    assert processor.df["country"].dtype == "category"
 
 
 def test_missing_value_handling(sample_data: pd.DataFrame, config: ProjectConfig, spark_session: SparkSession) -> None:
@@ -71,9 +80,7 @@ def test_missing_value_handling(sample_data: pd.DataFrame, config: ProjectConfig
     processor = DataProcessor(pandas_df=sample_data, config=config, spark=spark_session)
     processor.preprocess()
 
-    assert processor.df["LotFrontage"].isna().sum() == 0
-    assert (processor.df["MasVnrType"] == "None").sum() > 0
-    assert (processor.df["MasVnrArea"] == 0).sum() > 0
+    assert processor.df["booking_status"].isna().sum() == 0
 
 
 def test_column_selection(sample_data: pd.DataFrame, config: ProjectConfig, spark_session: SparkSession) -> None:
@@ -89,7 +96,18 @@ def test_column_selection(sample_data: pd.DataFrame, config: ProjectConfig, spar
     processor = DataProcessor(pandas_df=sample_data, config=config, spark=spark_session)
     processor.preprocess()
 
-    expected_columns = config.cat_features + config.num_features + [config.target, "Id"]
+    created_columns = [
+            'month_sin',
+            'month_cos',
+            "year_2017",
+            "year_2018",
+            'is_first_quarter',
+            'is_second_quarter',
+            'is_third_quarter',
+            'is_fourth_quarter'
+        ]
+
+    expected_columns = config.cat_features + config.num_features + [config.target, "Booking_ID"] + created_columns
     assert set(processor.df.columns) == set(expected_columns)
 
 
