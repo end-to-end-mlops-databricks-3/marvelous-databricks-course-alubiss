@@ -24,7 +24,6 @@ class DataProcessor:
 
         This method handles missing values, converts data types, and performs feature engineering.
         """
-
         self.df['arrival_date'] = '01'
         # Handle date features
         self.df['arrival_full_date'] = pd.to_datetime(
@@ -41,7 +40,6 @@ class DataProcessor:
         self.df['is_second_quarter'] = self.df['arrival_month'].apply(lambda x: 1 if x in [4, 5, 6] else 0)
         self.df['is_third_quarter'] = self.df['arrival_month'].apply(lambda x: 1 if x in [7, 8, 9] else 0)
         self.df['is_fourth_quarter'] = self.df['arrival_month'].apply(lambda x: 1 if x in [10, 11, 12] else 0)
-
 
         created_columns = [
             'month_sin',
@@ -115,4 +113,3 @@ class DataProcessor:
             f"ALTER TABLE {self.config.catalog_name}.{self.config.schema_name}.test_set "
             "SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
         )
-
