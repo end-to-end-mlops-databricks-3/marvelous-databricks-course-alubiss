@@ -1,6 +1,6 @@
 """Data preprocessing module."""
-import pandas as pd
 import numpy as np
+import pandas as pd
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import current_timestamp, to_utc_timestamp
 from sklearn.model_selection import train_test_split
@@ -37,9 +37,6 @@ class DataProcessor:
         self.df['month_sin'] = np.sin(2 * np.pi * self.df['arrival_month'] / 12)
         self.df['month_cos'] = np.cos(2 * np.pi * self.df['arrival_month'] / 12)
 
-        year_dummies = pd.get_dummies(self.df['arrival_year'], prefix='year')
-        self.df = pd.concat([self.df, year_dummies], axis=1)
-
         self.df['is_first_quarter'] = self.df['arrival_month'].apply(lambda x: 1 if x in [1, 2, 3] else 0)
         self.df['is_second_quarter'] = self.df['arrival_month'].apply(lambda x: 1 if x in [4, 5, 6] else 0)
         self.df['is_third_quarter'] = self.df['arrival_month'].apply(lambda x: 1 if x in [7, 8, 9] else 0)
@@ -49,7 +46,6 @@ class DataProcessor:
         created_columns = [
             'month_sin',
             'month_cos',
-            *year_dummies.columns.tolist(),
             'is_first_quarter',
             'is_second_quarter',
             'is_third_quarter',
@@ -119,3 +115,4 @@ class DataProcessor:
             f"ALTER TABLE {self.config.catalog_name}.{self.config.schema_name}.test_set "
             "SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
         )
+

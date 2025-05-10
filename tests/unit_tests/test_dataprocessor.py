@@ -1,16 +1,16 @@
 """Unit tests for DataProcessor."""
-import sys
 import os
+import sys
 
 import pandas as pd
 import pytest
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
-from conftest import CATALOG_DIR
 from delta.tables import DeltaTable
 from pyspark.sql import SparkSession
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../src")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
+from conftest import CATALOG_DIR
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../src")))
 from hotel_reservations.config import ProjectConfig
 from hotel_reservations.data_processor import DataProcessor
 
@@ -99,8 +99,6 @@ def test_column_selection(sample_data: pd.DataFrame, config: ProjectConfig, spar
     created_columns = [
             'month_sin',
             'month_cos',
-            "year_2017",
-            "year_2018",
             'is_first_quarter',
             'is_second_quarter',
             'is_third_quarter',

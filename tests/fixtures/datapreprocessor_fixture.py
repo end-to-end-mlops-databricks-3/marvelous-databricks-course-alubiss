@@ -1,12 +1,11 @@
 """Dataloader fixture."""
 
+import os
 import pandas as pd
 import pytest
+import sys
 from loguru import logger
 from pyspark.sql import SparkSession
-
-import sys
-import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../src")))
 
