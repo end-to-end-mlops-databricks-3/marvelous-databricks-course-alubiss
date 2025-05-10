@@ -15,3 +15,4 @@ Verify your installation with:
 
 ```bash
 task --version
+```
