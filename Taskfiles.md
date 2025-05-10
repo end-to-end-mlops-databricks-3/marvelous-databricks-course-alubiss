@@ -68,5 +68,3 @@ task clean
 | `serve-coverage-report`                  | Serves the HTML coverage report at [http://localhost:8000](http://localhost:8000). |
 | `serve-latest-registered-model-locally`  | Downloads the latest registered MLflow model from Databricks and serves it locally via `mlflow models serve`. |
 | `help` or `default`                      | Lists all defined tasks with their descriptions. |
-
-
