@@ -1,14 +1,10 @@
 """Unit tests for DataProcessor."""
 
-import os
-import sys
-
 import pandas as pd
 import pytest
+from conftest import CATALOG_DIR
 from delta.tables import DeltaTable
 from pyspark.sql import SparkSession
-
-from conftest import CATALOG_DIR
 
 from hotel_reservations.config import ProjectConfig
 from hotel_reservations.data_processor import DataProcessor

@@ -1,8 +1,5 @@
 """Dataloader fixture."""
 
-import os
-import sys
-
 import pandas as pd
 import pytest
 from loguru import logger

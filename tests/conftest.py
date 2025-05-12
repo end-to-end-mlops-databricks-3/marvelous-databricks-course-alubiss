@@ -1,8 +1,6 @@
 """Conftest module."""
 
-import os
 import platform
-import sys
 
 from hotel_reservations import PROJECT_DIR
 

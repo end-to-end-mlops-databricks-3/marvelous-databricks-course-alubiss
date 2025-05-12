@@ -5,7 +5,7 @@ vars:
   PACKAGE_IMPORT_NAME: hotel_reservation
   PYTHON_VERSION: 3.11
   ENVIRONMENT: {{.ENVIRONMENT | default "dev"}}
-  
+
 tasks:
   create-venv:
     desc: Create a virtual environment
