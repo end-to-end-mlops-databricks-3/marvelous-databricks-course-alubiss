@@ -8,8 +8,6 @@ import pytest
 from loguru import logger
 from pyspark.sql import SparkSession
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../src")))
-
 from hotel_reservations import PROJECT_DIR
 from hotel_reservations.config import ProjectConfig, Tags
 from tests.unit_tests.spark_config import spark_config

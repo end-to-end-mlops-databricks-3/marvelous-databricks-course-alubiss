@@ -8,10 +8,8 @@ import pytest
 from delta.tables import DeltaTable
 from pyspark.sql import SparkSession
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 from conftest import CATALOG_DIR
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../src")))
 from hotel_reservations.config import ProjectConfig
 from hotel_reservations.data_processor import DataProcessor
 

@@ -4,8 +4,6 @@ import os
 import platform
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
-
 from hotel_reservations import PROJECT_DIR
 
 MLRUNS_DIR = PROJECT_DIR / "tests" / "mlruns"
