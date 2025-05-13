@@ -2,8 +2,9 @@ version: '3'
 dotenv: [.env]
 
 vars:
-  PACKAGE_IMPORT_NAME: mlops_course
+  PACKAGE_IMPORT_NAME: hotel_reservation
   PYTHON_VERSION: 3.11
+  ENVIRONMENT: {{.ENVIRONMENT | default "dev"}}
 
 tasks:
   create-venv:
@@ -11,6 +12,12 @@ tasks:
     cmds:
       - uv venv -p {{.PYTHON_VERSION}} .venv
     silent: false
+
+  sync:
+    desc: Sync dependencies based on the environment
+    cmds:
+      - if [ "{{.ENVIRONMENT}}" = "dev" ]; then task sync-dev; fi
+      - if [ "{{.ENVIRONMENT}}" = "test" ]; then task sync-test; fi
 
   sync-dev:
     desc: Sync project dependencies with optionals
@@ -22,10 +29,9 @@ tasks:
   sync-test:
     desc: Sync only test dependencies
     cmds:
-        - rm -rf .venv
-        - task: create-venv
-        - uv sync --extra test
-        # - source .venv/Scripts/activate && uv sync --extra test # Activate and sync
+      - rm -rf .venv
+      - task: create-venv
+      - uv sync --extra test
 
   lint:
     desc: Run pre-commit hooks
