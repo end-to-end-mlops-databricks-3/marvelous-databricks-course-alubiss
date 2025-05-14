@@ -8,6 +8,8 @@ dev:
   catalog_name: mlops_dev
   schema_name: olalubic
 
+experiment_name_custom: /Shared/alubiss-model-custom
+
 parameters:
   learning_rate: 0.01
   n_estimators: 1000
