@@ -105,7 +105,7 @@ def test_column_selection(sample_data: pd.DataFrame, config: ProjectConfig, spar
         "is_fourth_quarter",
     ]
 
-    expected_columns = config.cat_features + config.num_features + [config.target, "Booking_ID"] + created_columns
+    expected_columns = config.cat_features + config.num_features + [config.target, "Booking_ID", "Client_ID"] + created_columns
     assert set(processor.df.columns) == set(expected_columns)
 
 

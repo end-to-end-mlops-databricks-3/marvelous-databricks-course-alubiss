@@ -6,6 +6,8 @@ from pyspark.sql import SparkSession
 
 import sys
 import os
+from pathlib import Path
+sys.path.append(str(Path.cwd().parent / 'src'))
 
 from hotel_reservations.config import ProjectConfig
 from hotel_reservations.data_processor import DataProcessor

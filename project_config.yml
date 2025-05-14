@@ -17,6 +17,7 @@ parameters:
 
 id_cols:
  - Booking_ID
+ - Client_ID
 
 num_features:
   - no_of_adults
