@@ -22,8 +22,6 @@ tasks:
   sync-dev:
     desc: Sync project dependencies with optionals
     cmds:
-      - rm -rf .venv
-      - task: create-venv
       - uv sync --extra dev
 
   sync-test:
