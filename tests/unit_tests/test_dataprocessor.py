@@ -1,5 +1,10 @@
 """Unit tests for DataProcessor."""
 
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+
 import pandas as pd
 import pytest
 from conftest import CATALOG_DIR
