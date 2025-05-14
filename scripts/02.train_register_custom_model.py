@@ -82,7 +82,7 @@ tags = Tags(**tags_dict)
 
 # Initialize model
 custom_model = CustomModel(
-    config=config, tags=tags, spark=spark, code_paths=["../dist/house_price-1.0.1-py3-none-any.whl"]
+    config=config, tags=tags, spark=spark, code_paths=["../src/hotel_reservations/models/custom_model.py"]
 )
 logger.info("Model initialized.")
 

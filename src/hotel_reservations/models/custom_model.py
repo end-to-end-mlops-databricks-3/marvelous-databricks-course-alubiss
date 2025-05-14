@@ -107,9 +107,9 @@ class CustomModel:
         self.data_version = "0"  # describe history -> retrieve
 
         self.X_train = self.train_set[self.num_features + self.cat_features]
-        self.y_train = self.train_set[self.target]
+        self.y_train = self.train_set[self.target].map({"Not_Canceled": 1, "Canceled": 0})
         self.X_test = self.test_set[self.num_features + self.cat_features]
-        self.y_test = self.test_set[self.target]
+        self.y_test = self.test_set[self.target].map({"Not_Canceled": 1, "Canceled": 0})
         logger.info("✅ Data successfully loaded.")
 
     def prepare_features(self) -> None:
@@ -200,8 +200,8 @@ class CustomModel:
         """
         logger.info("🔄 Registering the model in UC...")
         registered_model = mlflow.register_model(
-            model_uri=f"runs:/{self.run_id}/pyfunc-house-price-model",
-            name=f"{self.catalog_name}.{self.schema_name}.house_prices_model_custom",
+            model_uri=f"runs:/{self.run_id}/pyfunc-alubiss-model",
+            name=f"{self.catalog_name}.{self.schema_name}.hotel_reservations_model_custom",
             tags=self.tags,
         )
         logger.info(f"✅ Model registered as version {registered_model.version}.")
@@ -210,7 +210,7 @@ class CustomModel:
 
         client = MlflowClient()
         client.set_registered_model_alias(
-            name=f"{self.catalog_name}.{self.schema_name}.house_prices_model_custom",
+            name=f"{self.catalog_name}.{self.schema_name}.hotel_reservations_model_custom",
             alias="latest-model",
             version=latest_version,
         )
@@ -254,7 +254,7 @@ class CustomModel:
         """
         logger.info("🔄 Loading model from MLflow alias 'production'...")
 
-        model_uri = f"models:/{self.catalog_name}.{self.schema_name}.house_prices_model_custom@latest-model"
+        model_uri = f"models:/{self.catalog_name}.{self.schema_name}.hotel_reservations_model_custom@latest-model"
         model = mlflow.pyfunc.load_model(model_uri)
 
         logger.info("✅ Model successfully loaded.")
