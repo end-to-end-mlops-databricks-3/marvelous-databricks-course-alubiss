@@ -1135,7 +1135,7 @@ databricks = [
 ]
 
 [[package]]
-name = "mlops-course"
+name = "hotel-reservations"
 source = { editable = "." }
 dependencies = [
     { name = "cffi" },
