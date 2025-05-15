@@ -61,7 +61,7 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         banned_client_list = pd.read_csv(context.artifacts["banned_client_list"])
         client_ids = model_input["Client_Id"].values
 
-        predictions = self.model.predict(model_input)  # Upewnij się, że to są klasy (0/1)
+        predictions = self.model.predict(model_input)
         logger.info(f"predictions: {predictions}")
 
         adjusted_predictions = serving_pred_function(client_ids, banned_client_list, predictions)
