@@ -59,7 +59,7 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         logger.info(f"model_input:{model_input}")
 
         banned_client_list = pd.read_csv(context.artifacts["banned_client_list"], sep= ";")
-        client_ids = model_input["Client_Id"].values
+        client_ids = model_input["Client_ID"].values
 
         predictions = self.model.predict(model_input)
         logger.info(f"predictions: {predictions}")
@@ -110,9 +110,9 @@ class PocessModeling:
         self.test_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set").toPandas()
         self.data_version = "0"  # describe history -> retrieve
 
-        self.X_train = self.train_set[self.num_features + self.cat_features + ["Client_Id"]]
+        self.X_train = self.train_set[self.num_features + self.cat_features + ["Client_ID"]]
         self.y_train = self.train_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
-        self.X_test = self.test_set[self.num_features + self.cat_features + ["Client_Id"]]
+        self.X_test = self.test_set[self.num_features + self.cat_features + ["Client_ID"]]
         self.y_test = self.test_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
 
         self.banned_client_df = pd.DataFrame({"banned_clients_ids": self.banned_clients_ids})
@@ -128,7 +128,7 @@ class PocessModeling:
         self.preprocessor = ColumnTransformer(
             transformers=[
                 ("cat", OneHotEncoder(handle_unknown="ignore"), self.cat_features),
-                ("drop_client_id", "drop", ["Client_Id"]),
+                ("drop_client_id", "drop", ["Client_ID"]),
             ],
             remainder="passthrough"
         )
