@@ -188,10 +188,6 @@ class PocessModeling:
             mlflow.log_metric("f1score", f1)
 
             # Log the model
-            input_example = self.train_set.iloc[[0]]
-            wrapper = ModelWrapper(self.pipeline)
-            model_output = wrapper.predict(context=None, model_input=input_example)
-            signature = infer_signature(model_input=input_example, model_output=model_output)
             if dataset_type == "PandasDataset":
                 dataset = mlflow.data.from_pandas(
                     self.train_set,
