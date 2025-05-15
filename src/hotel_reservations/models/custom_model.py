@@ -26,7 +26,7 @@ from mlflow.models import infer_signature
 from mlflow.utils.environment import _mlflow_conda_env
 from pyspark.sql import SparkSession
 from sklearn.compose import ColumnTransformer
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score  # ZAMIANA
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
@@ -106,9 +106,9 @@ class PocessModeling:
         self.data_version = "0"  # describe history -> retrieve
 
         self.X_train = self.train_set[self.num_features + self.cat_features]
-        self.y_train = self.train_set[self.target].map({"Not_Canceled": 1, "Canceled": 0})
+        self.y_train = self.train_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
         self.X_test = self.test_set[self.num_features + self.cat_features]
-        self.y_test = self.test_set[self.target].map({"Not_Canceled": 1, "Canceled": 0})
+        self.y_test = self.test_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
         logger.info("✅ Data successfully loaded.")
 
     def prepare_features(self) -> None:
