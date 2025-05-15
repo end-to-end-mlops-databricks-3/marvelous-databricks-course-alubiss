@@ -58,7 +58,7 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         """
         logger.info(f"model_input:{model_input}")
 
-        banned_client_list = pd.read_csv(context.artifacts["banned_client_list.csv"], sep=";")
+        banned_client_list = pd.read_csv(context.artifacts["pyfunc-alubiss-model/banned_client_list.csv"], sep=";")
         client_ids = model_input["Client_ID"].values
 
         predictions = self.model.predict_proba(model_input)
@@ -172,7 +172,7 @@ class PocessModeling:
             logger.info(f"📊 F1 Score: {f1}")
 
             self.banned_client_df.to_csv("banned_client_list.csv", index=False, sep =";")
-            mlflow.log_artifact("banned_client_list.csv")
+            mlflow.log_artifact("banned_client_list.csv", artifact_path="pyfunc-alubiss-model")
 
             # Log parameters and metrics
             mlflow.log_param("model_type", "LightGBMClassifier with preprocessing")
