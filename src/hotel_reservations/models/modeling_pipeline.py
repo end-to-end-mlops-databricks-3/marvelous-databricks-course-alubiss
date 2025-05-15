@@ -61,7 +61,7 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         banned_client_list = pd.read_csv(context.artifacts["banned_client_list"], sep= ";")
         client_ids = model_input["Client_ID"].values
 
-        predictions = self.model.predict(model_input)
+        predictions = self.model.predict_proba(model_input)
         logger.info(f"predictions: {predictions}")
 
         adjusted_predictions = serving_pred_function(client_ids, banned_client_list, predictions)
@@ -181,7 +181,7 @@ class PocessModeling:
             mlflow.log_metric("f1score", f1)
 
             # Log the model
-            signature = infer_signature(model_input=self.train_set, model_output=self.pipeline.predict(self.train_set))
+            signature = infer_signature(model_input=self.train_set, model_output=self.pipeline.predict_proba(self.train_set))
             if dataset_type == "PandasDataset":
                 dataset = mlflow.data.from_pandas(
                     self.train_set,
@@ -276,7 +276,7 @@ class PocessModeling:
         logger.info("✅ Model successfully loaded.")
 
         # Make predictions: None is context
-        predictions = model.predict(input_data)
+        predictions = model.predict_proba(input_data)
 
         # Return predictions as a DataFrame
         return predictions
