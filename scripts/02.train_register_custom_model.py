@@ -14,7 +14,7 @@ from pyspark.dbutils import DBUtils
 from pyspark.sql import SparkSession
 
 from hotel_reservations.config import ProjectConfig, Tags
-from hotel_reservations.models.custom_model import CustomModel
+from hotel_reservations.models.custom_model import PocessModeling
 
 # Configure tracking uri
 mlflow.set_tracking_uri("databricks")
@@ -81,7 +81,7 @@ tags_dict = {"git_sha": args.git_sha, "branch": args.branch, "job_run_id": args.
 tags = Tags(**tags_dict)
 
 # Initialize model
-custom_model = CustomModel(
+custom_model = PocessModeling(
     config=config, tags=tags, spark=spark, code_paths=["../src/hotel_reservations/models/custom_model.py"]
 )
 logger.info("Model initialized.")
