@@ -22,12 +22,16 @@ tasks:
   sync-dev:
     desc: Sync project dependencies with optionals
     cmds:
+      - rm -rf .venv
+      - task: create-venv
       - uv sync --extra dev
 
   sync-test:
     desc: Sync only test dependencies
     cmds:
-      - uv sync --extra test
+        - rm -rf .venv
+        - task: create-venv
+        - source .venv/Scripts/activate && uv sync --extra test
 
   lint:
     desc: Run pre-commit hooks
