@@ -57,17 +57,24 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         :return: A dictionary containing the adjusted prediction.
         """
         logger.info(f"model_input:{model_input}")
+        out = {}
 
         banned_client_list = pd.read_csv(context.artifacts["banned_client_list"], sep=";")
         client_ids = model_input["Client_ID"].values
 
         predictions = self.model.predict_proba(model_input)
-        proba_canceled = predictions[:, 1] # proba of cancellation
+        proba_canceled = predictions[:, 1][0] # proba of cancellation
         logger.info(f"predictions: {proba_canceled}")
 
         adjusted_predictions = serving_pred_function(client_ids, banned_client_list, proba_canceled)
         logger.info(f"adjusted_predictions: {adjusted_predictions}")
-        return adjusted_predictions
+
+        comment= ["Banned" if client_id in banned_client_list["banned_clients_ids"].values else "None" for client_id in client_ids]
+
+        out['Client_ID'] = client_ids
+        out['Proba'] = proba_canceled
+        out['Comment'] = comment
+        return out
 
 
 class PocessModeling:
