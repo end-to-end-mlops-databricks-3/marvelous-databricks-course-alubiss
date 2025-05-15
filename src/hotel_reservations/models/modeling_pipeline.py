@@ -58,23 +58,7 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         """
         logger.info(f"model_input:{model_input}")
 
-        cols_types = {
-            "required_car_parking_space": "int32",
-            "no_of_adults": "int32",
-            "no_of_children": "int32",
-            "no_of_weekend_nights": "int32",
-            "no_of_week_nights": "int32",
-            "lead_time": "int32",
-            "repeated_guest": "int32",
-            "no_of_previous_cancellations": "int32",
-            "no_of_previous_bookings_not_canceled": "int32",
-            "avg_price_per_room": "float64",
-            "no_of_special_requests": "int32",
-        }
-
-        model_input = model_input.astype(cols_types)
-
-        banned_client_list = pd.read_csv(context.artifacts["pyfunc-alubiss-model/banned_client_list.csv"], sep=";")
+        banned_client_list = pd.read_csv(context.artifacts["banned_client_list.csv"], sep=";")
         client_ids = model_input["Client_ID"].values
 
         predictions = self.model.predict_proba(model_input)
@@ -188,7 +172,7 @@ class PocessModeling:
             logger.info(f"📊 F1 Score: {f1}")
 
             self.banned_client_df.to_csv("banned_client_list.csv", index=False, sep =";")
-            mlflow.log_artifact("banned_client_list.csv", artifact_path="pyfunc-alubiss-model")
+            mlflow.log_artifact("banned_client_list.csv")
 
             # Log parameters and metrics
             mlflow.log_param("model_type", "LightGBMClassifier with preprocessing")
