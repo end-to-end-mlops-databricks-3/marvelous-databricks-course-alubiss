@@ -29,6 +29,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
+from mlflow.models.signature import ModelSignature, Schema, ColSpec
 
 from hotel_reservations.config import ProjectConfig, Tags
 from hotel_reservations.utils import serving_pred_function
@@ -206,6 +207,18 @@ class PocessModeling:
 
             conda_env = _mlflow_conda_env(additional_pip_deps=additional_pip_deps)
 
+            input_signature = Schema([
+                ColSpec("double", name) for name in self.X_train.columns  # lub podaj ręcznie typy i nazwy kolumn wejściowych
+            ])
+
+            output_signature = Schema([
+                ColSpec("string", "Client_ID"),
+                ColSpec("double", "Proba"),
+                ColSpec("string", "Comment"),
+            ])
+
+            signature = ModelSignature(inputs=input_signature, outputs=output_signature)
+
             mlflow.pyfunc.log_model(
                 python_model=ModelWrapper(self.pipeline),
                 artifact_path="pyfunc-alubiss-model",
@@ -213,7 +226,7 @@ class PocessModeling:
                 code_paths=self.code_paths,
                 conda_env=conda_env,
                 #signature=signature,
-                #input_example=self.train_set.iloc[0:1],
+                input_example=self.train_set.iloc[0:1],
             )
 
     def register_model(self) -> None:
