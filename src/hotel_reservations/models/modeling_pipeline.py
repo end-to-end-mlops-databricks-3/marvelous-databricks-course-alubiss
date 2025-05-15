@@ -110,9 +110,9 @@ class PocessModeling:
         self.test_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set").toPandas()
         self.data_version = "0"  # describe history -> retrieve
 
-        self.X_train = self.train_set[self.num_features + self.cat_features]
+        self.X_train = self.train_set[self.num_features + self.cat_features + ["Client_Id"]]
         self.y_train = self.train_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
-        self.X_test = self.test_set[self.num_features + self.cat_features]
+        self.X_test = self.test_set[self.num_features + self.cat_features + ["Client_Id"]]
         self.y_test = self.test_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
 
         self.banned_client_df = pd.DataFrame({"banned_clients_ids": self.banned_clients_ids})
@@ -126,7 +126,11 @@ class PocessModeling:
         """
         logger.info("🔄 Defining preprocessing pipeline...")
         self.preprocessor = ColumnTransformer(
-            transformers=[("cat", OneHotEncoder(handle_unknown="ignore"), self.cat_features)], remainder="passthrough"
+            transformers=[
+                ("cat", OneHotEncoder(handle_unknown="ignore"), self.cat_features),
+                ("drop_client_id", "drop", ["Client_Id"]),
+            ],
+            remainder="passthrough"
         )
 
         self.pipeline = Pipeline(
