@@ -178,7 +178,7 @@ class PocessModeling:
             mlflow.log_metric("accuracy", accuracy)
             mlflow.log_metric("precision", precision)
             mlflow.log_metric("recall", recall)
-            mlflow.log_metric("f1_score", f1)
+            mlflow.log_metric("f1score", f1)
 
             # Log the model
             signature = infer_signature(model_input=self.train_set, model_output=self.pipeline.predict(self.train_set))
