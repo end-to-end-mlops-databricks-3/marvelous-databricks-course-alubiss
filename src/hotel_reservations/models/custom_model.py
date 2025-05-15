@@ -34,14 +34,14 @@ from hotel_reservations.config import ProjectConfig, Tags
 from hotel_reservations.utils import adjust_predictions
 
 
-class HousePriceModelWrapper(mlflow.pyfunc.PythonModel):
+class ModelWrapper(mlflow.pyfunc.PythonModel):
     """Wrapper class for machine learning models to be used with MLflow.
 
     This class wraps a machine learning model for predicting house prices.
     """
 
     def __init__(self, model: object) -> None:
-        """Initialize the HousePriceModelWrapper.
+        """Initialize the ModelWrapper.
 
         :param model: The underlying machine learning model.
         """
@@ -65,7 +65,7 @@ class HousePriceModelWrapper(mlflow.pyfunc.PythonModel):
         return adjusted_predictions
 
 
-class CustomModel:
+class PocessModeling:
     """Custom model class for house price prediction.
 
     This class encapsulates the entire workflow of loading data, preparing features,
@@ -73,7 +73,7 @@ class CustomModel:
     """
 
     def __init__(self, config: ProjectConfig, tags: Tags, spark: SparkSession, code_paths: list[str]) -> None:
-        """Initialize the CustomModel.
+        """Initialize the PocessModeling.
 
         :param config: Configuration object containing model settings.
         :param tags: Tags for MLflow logging.
@@ -184,7 +184,7 @@ class CustomModel:
             conda_env = _mlflow_conda_env(additional_pip_deps=additional_pip_deps)
 
             mlflow.pyfunc.log_model(
-                python_model=HousePriceModelWrapper(self.pipeline),
+                python_model=ModelWrapper(self.pipeline),
                 artifact_path="pyfunc-house-price-model",
                 code_paths=self.code_paths,
                 conda_env=conda_env,
