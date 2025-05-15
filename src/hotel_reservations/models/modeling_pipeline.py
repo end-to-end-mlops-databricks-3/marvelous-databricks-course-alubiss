@@ -278,7 +278,7 @@ class PocessModeling:
         logger.info("✅ Model successfully loaded.")
 
         # Make predictions: None is context
-        predictions = model.predict_proba(input_data)
+        predictions = model.predict(input_data)
 
         # Return predictions as a DataFrame
         return predictions
