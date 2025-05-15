@@ -29,7 +29,8 @@ from sklearn.compose import ColumnTransformer
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
-from mlflow.models.signature import ModelSignature, Schema, ColSpec
+from mlflow.types import Schema, ColSpec
+from mlflow.models.signature import ModelSignature
 
 from hotel_reservations.config import ProjectConfig, Tags
 from hotel_reservations.utils import serving_pred_function
