@@ -181,7 +181,7 @@ class PocessModeling:
             mlflow.log_metric("f1_score", f1)
 
             # Log the model
-            signature = infer_signature(model_input=self.X_train, model_output=self.pipeline.predict(self.X_train))
+            signature = infer_signature(model_input=self.train_set, model_output=self.pipeline.predict(self.train_set))
             if dataset_type == "PandasDataset":
                 dataset = mlflow.data.from_pandas(
                     self.train_set,
@@ -206,7 +206,7 @@ class PocessModeling:
                 code_paths=self.code_paths,
                 conda_env=conda_env,
                 signature=signature,
-                input_example=self.X_train.iloc[0:1],
+                input_example=self.train_set.iloc[0:1],
             )
 
     def register_model(self) -> None:
