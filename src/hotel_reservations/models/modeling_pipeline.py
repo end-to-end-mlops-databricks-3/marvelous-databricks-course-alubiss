@@ -65,7 +65,7 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         proba_canceled = predictions[:, 1] # proba of cancellation
         logger.info(f"predictions: {proba_canceled}")
 
-        adjusted_predictions = serving_pred_function(client_ids, banned_client_list, predictions)
+        adjusted_predictions = serving_pred_function(client_ids, banned_client_list, proba_canceled)
         logger.info(f"adjusted_predictions: {adjusted_predictions}")
         return adjusted_predictions
 
