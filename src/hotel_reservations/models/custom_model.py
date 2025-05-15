@@ -188,7 +188,7 @@ class PocessModeling:
 
             mlflow.pyfunc.log_model(
                 python_model=ModelWrapper(self.pipeline),
-                artifact_path="pyfunc-house-price-model",
+                artifact_path="pyfunc-alubiss-model",
                 code_paths=self.code_paths,
                 conda_env=conda_env,
                 signature=signature,
