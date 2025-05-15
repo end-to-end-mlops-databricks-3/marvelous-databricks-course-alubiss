@@ -44,3 +44,9 @@ cat_features:
   - country
 
 target: booking_status
+
+banned_clients_ids:
+  - "12345"
+  - "67890"
+  - "ABCDE"
+  - "95890"

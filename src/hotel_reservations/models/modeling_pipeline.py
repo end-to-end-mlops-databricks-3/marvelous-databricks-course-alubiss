@@ -12,6 +12,7 @@ catalog_name, schema_name → Database schema names for Databricks tables.
 import os
 import sys
 from typing import Literal
+import tempfile
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 
@@ -97,6 +98,7 @@ class PocessModeling:
         self.experiment_name = self.config.experiment_name_custom
         self.tags = tags.dict()
         self.code_paths = code_paths
+        self.banned_clients_ids = self.config.banned_clients_ids
 
     def load_data(self) -> None:
         """Load training and testing data from Delta tables.
@@ -113,6 +115,8 @@ class PocessModeling:
         self.y_train = self.train_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
         self.X_test = self.test_set[self.num_features + self.cat_features]
         self.y_test = self.test_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
+
+        self.banned_client_df = pd.DataFrame({"banned_clients_ids": self.banned_clients_ids})
         logger.info("✅ Data successfully loaded.")
 
     def prepare_features(self) -> None:
@@ -161,6 +165,10 @@ class PocessModeling:
             logger.info(f"📊 Precision: {precision}")
             logger.info(f"📊 Recall: {recall}")
             logger.info(f"📊 F1 Score: {f1}")
+
+            with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False) as tmp:
+                self.banned_client_df.to_csv(tmp.name, index=False)
+                mlflow.log_artifact(tmp.name, artifact_path="banned_client_list")
 
             # Log parameters and metrics
             mlflow.log_param("model_type", "LightGBMClassifier with preprocessing")
