@@ -73,7 +73,7 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
 
         comment= ["Banned" if client_id in banned_client_list["banned_clients_ids"].values else "None" for client_id in client_ids]
 
-        out['Client_ID'] = client_ids.values
+        out['Client_ID'] = client_ids[0]
         out['Proba'] = adjusted_predictions[0]
         out['Comment'] = comment[0]
         return out
