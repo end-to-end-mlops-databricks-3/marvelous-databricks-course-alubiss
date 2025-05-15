@@ -213,7 +213,7 @@ class PocessModeling:
                 code_paths=self.code_paths,
                 conda_env=conda_env,
                 #signature=signature,
-                input_example=self.train_set.iloc[0:1],
+                #input_example=self.train_set.iloc[0:1],
             )
 
     def register_model(self) -> None:
