@@ -272,6 +272,22 @@ class PocessModeling:
         """
         logger.info("🔄 Loading model from MLflow alias 'production'...")
 
+        cols_types = {
+            "required_car_parking_space": "int32",
+            "no_of_adults": "int32",
+            "no_of_children": "int32",
+            "no_of_weekend_nights": "int32",
+            "no_of_week_nights": "int32",
+            "lead_time": "int32",
+            "repeated_guest": "int32",
+            "no_of_previous_cancellations": "int32",
+            "no_of_previous_bookings_not_canceled": "int32",
+            "avg_price_per_room": "float64",
+            "no_of_special_requests": "int32",
+        }
+
+        input_data = input_data.astype(cols_types)
+
         model_uri = f"models:/{self.catalog_name}.{self.schema_name}.hotel_reservations_model_custom@latest-model"
         model = mlflow.pyfunc.load_model(model_uri)
 
