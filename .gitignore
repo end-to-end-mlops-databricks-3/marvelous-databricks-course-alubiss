@@ -13,6 +13,9 @@ __pycache__/
 # data/
 typings/
 
+# Files
+scripts/banned_client_list.csv
+
 # Distribution / packaging
 .Python
 build/

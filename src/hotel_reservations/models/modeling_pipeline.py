@@ -12,7 +12,6 @@ catalog_name, schema_name → Database schema names for Databricks tables.
 import os
 import sys
 from typing import Literal
-import tempfile
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 
@@ -59,7 +58,7 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         """
         logger.info(f"model_input:{model_input}")
 
-        banned_client_list = pd.read_csv(context.artifacts["banned_client_list"])
+        banned_client_list = pd.read_csv(context.artifacts["banned_client_list"], sep= ";")
         client_ids = model_input["Client_Id"].values
 
         predictions = self.model.predict(model_input)
@@ -166,7 +165,7 @@ class PocessModeling:
             logger.info(f"📊 Recall: {recall}")
             logger.info(f"📊 F1 Score: {f1}")
 
-            self.banned_client_df.to_csv("banned_client_list.csv", index=False)
+            self.banned_client_df.to_csv("banned_client_list.csv", index=False, sep =";")
             mlflow.log_artifact("banned_client_list.csv", artifact_path="pyfunc-alubiss-model")
 
             # Log parameters and metrics
