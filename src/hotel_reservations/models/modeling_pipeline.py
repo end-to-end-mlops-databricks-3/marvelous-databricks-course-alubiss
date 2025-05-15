@@ -206,7 +206,7 @@ class PocessModeling:
             mlflow.pyfunc.log_model(
                 python_model=ModelWrapper(self.pipeline),
                 artifact_path="pyfunc-alubiss-model",
-                artifacts={'banned_client_list': f"/Volumes/{self.catalog_name}.{self.schema_name}/alubiss/banned_client_list.csv"},
+                artifacts={'banned_client_list': f"/Volumes/{self.catalog_name}/{self.schema_name}/alubiss/banned_client_list.csv"},
                 code_paths=self.code_paths,
                 conda_env=conda_env,
                 signature=signature,
