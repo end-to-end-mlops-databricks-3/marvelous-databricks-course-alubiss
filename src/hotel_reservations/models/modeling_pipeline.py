@@ -106,8 +106,8 @@ class PocessModeling:
         """
         logger.info("🔄 Loading data from Databricks tables...")
         self.train_set_spark = self.spark.table(f"{self.catalog_name}.{self.schema_name}.train_set")
-        self.train_set = self.train_set_spark.toPandas()
-        self.test_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set").toPandas()
+        self.train_set = self.train_set_spark.toPandas().drop(columns=["update_timestamp_utc"])
+        self.test_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set").toPandas().drop(columns=["update_timestamp_utc"])
         self.data_version = "0"  # describe history -> retrieve
 
         self.X_train = self.train_set[self.num_features + self.cat_features + ["Client_ID", "Booking_ID"]]
