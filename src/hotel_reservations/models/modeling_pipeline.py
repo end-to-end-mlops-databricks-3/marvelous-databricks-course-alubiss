@@ -58,7 +58,7 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         """
         logger.info(f"model_input:{model_input}")
 
-        banned_client_list = pd.read_csv(context.artifacts["banned_client_list.csv"], sep=";")
+        banned_client_list = pd.read_csv(context.artifacts["pyfunc-alubiss-model/banned_client_list.csv"], sep=";")
         client_ids = model_input["Client_ID"].values
 
         predictions = self.model.predict_proba(model_input)
