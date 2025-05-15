@@ -209,7 +209,29 @@ class PocessModeling:
             conda_env = _mlflow_conda_env(additional_pip_deps=additional_pip_deps)
 
             input_signature = Schema([
-                ColSpec("double", name) for name in self.X_train.columns  # lub podaj ręcznie typy i nazwy kolumn wejściowych
+                ColSpec("int32", "required_car_parking_space"),
+                ColSpec("int32", "no_of_adults"),
+                ColSpec("int32", "no_of_children"),
+                ColSpec("int32", "no_of_weekend_nights"),
+                ColSpec("int32", "no_of_week_nights"),
+                ColSpec("int32", "lead_time"),
+                ColSpec("int32", "repeated_guest"),
+                ColSpec("int32", "no_of_previous_cancellations"),
+                ColSpec("int32", "no_of_previous_bookings_not_canceled"),
+                ColSpec("float64", "avg_price_per_room"),
+                ColSpec("int32", "no_of_special_requests"),
+                ColSpec("string", "type_of_meal_plan"),
+                ColSpec("string", "room_type_reserved"),
+                ColSpec("string", "market_segment_type"),
+                ColSpec("string", "country"),
+                ColSpec("int32", "is_first_quarter"),
+                ColSpec("int32", "is_second_quarter"),
+                ColSpec("int32", "is_third_quarter"),
+                ColSpec("int32", "is_fourth_quarter"),
+                ColSpec("float64", "month_sin"),
+                ColSpec("float64", "month_cos"),
+                ColSpec("string", "Client_ID"),
+                ColSpec("string", "Booking_ID")
             ])
 
             output_signature = Schema([
