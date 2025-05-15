@@ -216,7 +216,7 @@ class PocessModeling:
                 artifacts={'banned_client_list': f"/Volumes/{self.catalog_name}/{self.schema_name}/alubiss/banned_client_list.csv"},
                 code_paths=self.code_paths,
                 conda_env=conda_env,
-                signature=signature,
+                #signature=signature,
                 input_example=self.train_set.iloc[0:1],
             )
 
