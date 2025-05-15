@@ -82,7 +82,7 @@ tags = Tags(**tags_dict)
 
 # Initialize model
 custom_model = PocessModeling(
-    config=config, tags=tags, spark=spark, code_paths=["../src/hotel_reservations/models/custom_model.py"]
+    config=config, tags=tags, spark=spark, code_paths=["../src/hotel_reservations/models/modeling_pipeline.py"]
 )
 logger.info("Model initialized.")
 
