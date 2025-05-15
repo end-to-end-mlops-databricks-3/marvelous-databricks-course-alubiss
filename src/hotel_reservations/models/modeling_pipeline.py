@@ -58,7 +58,7 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         """
         logger.info(f"model_input:{model_input}")
 
-        banned_client_list = pd.read_csv(context.artifacts["banned_client_list.csv"], sep=";")
+        banned_client_list = pd.read_csv(context.artifacts["banned_client_list"], sep=";")
         logger.info(f"{banned_client_list.head()}")
         client_ids = model_input["Client_ID"].values
 
@@ -206,6 +206,7 @@ class PocessModeling:
             mlflow.pyfunc.log_model(
                 python_model=ModelWrapper(self.pipeline),
                 artifact_path="pyfunc-alubiss-model",
+                artifacts={'banned_client_list': f"/Volumes/{self.catalog_name}.{self.schema_name}/alubiss/banned_client_list.csv"},
                 code_paths=self.code_paths,
                 conda_env=conda_env,
                 signature=signature,
