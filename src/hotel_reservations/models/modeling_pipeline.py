@@ -58,7 +58,7 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         """
         logger.info(f"model_input:{model_input}")
 
-        banned_client_list = pd.read_csv(context.artifacts["banned_client_list"], sep=";")
+        banned_client_list = pd.read_csv(context.artifacts["banned_client_list.csv"], sep=";")
         logger.info(f"{banned_client_list.head()}")
         client_ids = model_input["Client_ID"].values
 
