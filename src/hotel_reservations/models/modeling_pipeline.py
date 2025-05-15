@@ -57,10 +57,14 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         :return: A dictionary containing the adjusted prediction.
         """
         logger.info(f"model_input:{model_input}")
-        predictions = self.model.predict(model_input)
+
+        banned_client_list = pd.read_csv(context.artifacts["banned_client_list"])
+        client_ids = model_input["Client_Id"].values
+
+        predictions = self.model.predict(model_input)  # Upewnij się, że to są klasy (0/1)
         logger.info(f"predictions: {predictions}")
-        # looks like {"Prediction": 10000.0}
-        adjusted_predictions = serving_pred_function(predictions)
+
+        adjusted_predictions = serving_pred_function(client_ids, banned_client_list, predictions)
         logger.info(f"adjusted_predictions: {adjusted_predictions}")
         return adjusted_predictions
 
