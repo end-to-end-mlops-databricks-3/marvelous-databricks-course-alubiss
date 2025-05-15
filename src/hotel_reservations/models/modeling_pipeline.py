@@ -172,9 +172,6 @@ class PocessModeling:
             logger.info(f"📊 Recall: {recall}")
             logger.info(f"📊 F1 Score: {f1}")
 
-            self.banned_client_df.to_csv("banned_client_list.csv", index=False, sep =";")
-            mlflow.log_artifact("banned_client_list.csv", artifact_path="pyfunc-alubiss-model")
-
             # Log parameters and metrics
             mlflow.log_param("model_type", "LightGBMClassifier with preprocessing")
             mlflow.log_params(self.parameters)
