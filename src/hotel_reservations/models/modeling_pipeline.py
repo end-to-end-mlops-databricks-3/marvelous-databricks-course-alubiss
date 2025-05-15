@@ -128,7 +128,7 @@ class PocessModeling:
         self.preprocessor = ColumnTransformer(
             transformers=[
                 ("cat", OneHotEncoder(handle_unknown="ignore"), self.cat_features),
-                ("drop_client_id", "drop", ["Client_Id"]),
+                ("drop_client_id", "drop", ["Client_ID"]),
             ],
             remainder="passthrough"
         )
