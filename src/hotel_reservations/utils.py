@@ -3,7 +3,7 @@
 import numpy as np
 
 
-def adjust_predictions(predictions: np.ndarray, scale_factor: float = 1.3) -> np.ndarray:
+def serving_pred_function(predictions: np.ndarray, scale_factor: float = 1.3) -> np.ndarray:
     """Adjust predictions by multiplying them with a scale factor.
 
     :param predictions: Array of predictions to be adjusted
