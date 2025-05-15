@@ -9,9 +9,9 @@ parameters → Hyperparameters for LightGBM.
 catalog_name, schema_name → Database schema names for Databricks tables.
 """
 
-from typing import Literal
 import os
 import sys
+from typing import Literal
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 
@@ -32,7 +32,6 @@ from sklearn.preprocessing import OneHotEncoder
 
 from hotel_reservations.config import ProjectConfig, Tags
 from hotel_reservations.utils import adjust_predictions
-from hotel_reservations import __version__
 
 
 class HousePriceModelWrapper(mlflow.pyfunc.PythonModel):
