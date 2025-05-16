@@ -13,9 +13,7 @@ sys.path.append(str(Path.cwd().parent / "src"))
 from hotel_reservations.config import ProjectConfig
 from hotel_reservations.data_processor import DataProcessor
 
-base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
-config_path = os.path.join(base_dir, "project_config.yml")
-
+config_path = os.path.join(str(Path.cwd().parent), "project_config.yml")
 config = ProjectConfig.from_yaml(config_path=config_path, env="dev")
 
 logger.info("Configuration loaded:")
