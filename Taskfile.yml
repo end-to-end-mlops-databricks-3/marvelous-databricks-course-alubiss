@@ -45,7 +45,7 @@ tasks:
 
   sync-databricks:
     desc: Sync the cloned repo from local machine to Databricks workspace
-    cmd: pip install - e .pyproject.toml
+    cmd: pip install -e .pyproject.toml
 
   default:
     cmds:

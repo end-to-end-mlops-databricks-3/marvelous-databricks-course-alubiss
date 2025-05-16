@@ -1,19 +1,21 @@
+"""Modeling Pipeline module."""
+
 import argparse
 import os
 import sys
 from pathlib import Path
-
-sys.path.append(str(Path.cwd().parent / "src"))
-base_dir = os.path.abspath(str(Path.cwd().parent))
-config_path = os.path.join(base_dir, "project_config.yml")
 
 import mlflow
 from loguru import logger
 from pyspark.dbutils import DBUtils
 from pyspark.sql import SparkSession
 
+sys.path.append(str(Path.cwd().parent / "src"))
 from hotel_reservations.config import ProjectConfig, Tags
 from hotel_reservations.models.modeling_pipeline import PocessModeling
+
+base_dir = os.path.abspath(str(Path.cwd().parent))
+config_path = os.path.join(base_dir, "project_config.yml")
 
 # Configure tracking uri
 mlflow.set_tracking_uri("databricks")
@@ -61,7 +63,7 @@ try:
         required=True,
     )
     args = parser.parse_args()
-except:
+except Exception:
     args = argparse.Namespace(root_path=config_path, env="dev", git_sha="123", job_run_id="unique_id", branch="alubiss")
 
 root_path = args.root_path

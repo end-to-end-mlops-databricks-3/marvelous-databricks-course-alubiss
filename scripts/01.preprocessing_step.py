@@ -1,3 +1,5 @@
+"""Data preprocessing module."""
+
 import os
 import sys
 from pathlib import Path
@@ -18,20 +20,24 @@ config = ProjectConfig.from_yaml(config_path=config_path, env="dev")
 
 logger.info("Configuration loaded:")
 logger.info(yaml.dump(config, default_flow_style=False))
-
-
-# Load the house prices dataset
 spark = SparkSession.builder.getOrCreate()
+is_local = False
 
-df = spark.read.csv(
-    f"/Volumes/{config.catalog_name}/{config.schema_name}/alubiss/hotel_reservations.csv",
-    sep=";",
-    header=True,
-    inferSchema=True,
-).toPandas()
-# df = spark.read.csv(
-#     f"C:/Users/tomek/Documents/GitHub/marvelous-databricks-course-alubiss/tests/test_data/sample.csv", sep = ";", header=True, inferSchema=True
-# ).toPandas()
+if is_local:
+    df = spark.read.csv(
+        "C:/Users/tomek/Documents/GitHub/marvelous-databricks-course-alubiss/tests/test_data/sample.csv",
+        sep=";",
+        header=True,
+        inferSchema=True,
+    ).toPandas()
+else:
+    # Load the house prices dataset
+    df = spark.read.csv(
+        f"/Volumes/{config.catalog_name}/{config.schema_name}/alubiss/hotel_reservations.csv",
+        sep=";",
+        header=True,
+        inferSchema=True,
+    ).toPandas()
 
 
 # Preprocess the data
