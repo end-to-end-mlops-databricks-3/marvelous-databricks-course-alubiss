@@ -96,17 +96,8 @@ def test_column_selection(sample_data: pd.DataFrame, config: ProjectConfig, spar
     processor = DataProcessor(pandas_df=sample_data, config=config, spark=spark_session)
     processor.preprocess()
 
-    created_columns = [
-        "month_sin",
-        "month_cos",
-        "is_first_quarter",
-        "is_second_quarter",
-        "is_third_quarter",
-        "is_fourth_quarter",
-    ]
-
     expected_columns = (
-        config.cat_features + config.num_features + [config.target, "Booking_ID", "Client_ID"] + created_columns
+        config.cat_features + config.num_features + [config.target, "arrival_month", "Booking_ID", "Client_ID"]
     )
     assert set(processor.df.columns) == set(expected_columns)
 
