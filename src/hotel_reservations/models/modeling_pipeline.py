@@ -35,13 +35,17 @@ from sklearn.preprocessing import OneHotEncoder
 from hotel_reservations.config import ProjectConfig, Tags
 from hotel_reservations.utils import serving_pred_function
 
+
 class DateFeatureEngineer(BaseEstimator, TransformerMixin):
-    def fit(self, X, y=None):
+    """Date features engineering class."""
+
+    def fit(self, X: pd.DataFrame, y: object = None) -> "DateFeatureEngineer":
+        """Fit method for date feature engineering."""
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Transform method for date feature engineering."""
         X = X.copy()
-        # Zakładamy, że arrival_month już jest int
         X["month_sin"] = np.sin(2 * np.pi * X["arrival_month"] / 12)
         X["month_cos"] = np.cos(2 * np.pi * X["arrival_month"] / 12)
         X["is_first_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [1, 2, 3] else 0)
@@ -49,6 +53,7 @@ class DateFeatureEngineer(BaseEstimator, TransformerMixin):
         X["is_third_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [7, 8, 9] else 0)
         X["is_fourth_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [10, 11, 12] else 0)
         return X
+
 
 class ModelWrapper(mlflow.pyfunc.PythonModel):
     """Wrapper class for machine learning models to be used with MLflow.
@@ -152,6 +157,7 @@ class PocessModeling:
         logger.info("✅ Data successfully loaded.")
 
     def prepare_features(self) -> None:
+        """Feature engineering and preprocessing."""
         logger.info("🔄 Defining preprocessing pipeline...")
         self.preprocessor = ColumnTransformer(
             transformers=[
