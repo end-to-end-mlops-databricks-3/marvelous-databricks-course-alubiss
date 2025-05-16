@@ -63,7 +63,7 @@ try:
         required=True,
     )
     args = parser.parse_args()
-except Exception:
+except (argparse.ArgumentError, SystemExit):
     args = argparse.Namespace(root_path=config_path, env="dev", git_sha="123", job_run_id="unique_id", branch="alubiss")
 
 root_path = args.root_path
