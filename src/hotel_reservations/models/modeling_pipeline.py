@@ -256,12 +256,7 @@ class PocessModeling:
                     ColSpec("string", "room_type_reserved"),
                     ColSpec("string", "market_segment_type"),
                     ColSpec("string", "country"),
-                    ColSpec("integer", "is_first_quarter"),
-                    ColSpec("integer", "is_second_quarter"),
-                    ColSpec("integer", "is_third_quarter"),
-                    ColSpec("integer", "is_fourth_quarter"),
-                    ColSpec("float", "month_sin"),
-                    ColSpec("float", "month_cos"),
+                    ColSpec("integer", "arrival_month"),
                     ColSpec("string", "Client_ID"),
                     ColSpec("string", "Booking_ID"),
                 ]
