@@ -25,36 +25,8 @@ class DataProcessor:
 
         This method handles missing values, converts data types, and performs feature engineering.
         """
-        self.df["arrival_date"] = "01"
-        # Handle date features
-        self.df["arrival_full_date"] = pd.to_datetime(
-            self.df["arrival_date"].astype(str)
-            + "-"
-            + self.df["arrival_month"].astype(str)
-            + "-"
-            + self.df["arrival_year"].astype(str),
-            format="%d-%m-%Y",
-        )
-
-        self.df["month_sin"] = np.sin(2 * np.pi * self.df["arrival_month"] / 12)
-        self.df["month_cos"] = np.cos(2 * np.pi * self.df["arrival_month"] / 12)
-
-        self.df["is_first_quarter"] = self.df["arrival_month"].apply(lambda x: 1 if x in [1, 2, 3] else 0)
-        self.df["is_second_quarter"] = self.df["arrival_month"].apply(lambda x: 1 if x in [4, 5, 6] else 0)
-        self.df["is_third_quarter"] = self.df["arrival_month"].apply(lambda x: 1 if x in [7, 8, 9] else 0)
-        self.df["is_fourth_quarter"] = self.df["arrival_month"].apply(lambda x: 1 if x in [10, 11, 12] else 0)
-
-        created_columns = [
-            "month_sin",
-            "month_cos",
-            "is_first_quarter",
-            "is_second_quarter",
-            "is_third_quarter",
-            "is_fourth_quarter",
-        ]
-
         # Handle numeric features
-        num_features = self.config.num_features
+        num_features = self.config.num_features + self.config.date_features
         for col in num_features:
             self.df[col] = pd.to_numeric(self.df[col], errors="coerce")
 
@@ -65,7 +37,7 @@ class DataProcessor:
 
         # Extract target and relevant features
         target = self.config.target
-        relevant_columns = cat_features + num_features + [target] + self.config.id_cols + created_columns
+        relevant_columns = cat_features + num_features + [target] + self.config.id_cols
         self.df = self.df[relevant_columns]
         for col in self.config.id_cols:
             self.df[col] = self.df[col].astype("str")

@@ -26,6 +26,7 @@ from mlflow.models.signature import ModelSignature
 from mlflow.types import ColSpec, Schema
 from mlflow.utils.environment import _mlflow_conda_env
 from pyspark.sql import SparkSession
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.pipeline import Pipeline
@@ -34,6 +35,20 @@ from sklearn.preprocessing import OneHotEncoder
 from hotel_reservations.config import ProjectConfig, Tags
 from hotel_reservations.utils import serving_pred_function
 
+class DateFeatureEngineer(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        X = X.copy()
+        # Zakładamy, że arrival_month już jest int
+        X["month_sin"] = np.sin(2 * np.pi * X["arrival_month"] / 12)
+        X["month_cos"] = np.cos(2 * np.pi * X["arrival_month"] / 12)
+        X["is_first_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [1, 2, 3] else 0)
+        X["is_second_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [4, 5, 6] else 0)
+        X["is_third_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [7, 8, 9] else 0)
+        X["is_fourth_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [10, 11, 12] else 0)
+        return X
 
 class ModelWrapper(mlflow.pyfunc.PythonModel):
     """Wrapper class for machine learning models to be used with MLflow.
@@ -137,22 +152,21 @@ class PocessModeling:
         logger.info("✅ Data successfully loaded.")
 
     def prepare_features(self) -> None:
-        """Prepare features for model training.
-
-        This method sets up a preprocessing pipeline including one-hot encoding for categorical
-        features and LightGBM regression model.
-        """
         logger.info("🔄 Defining preprocessing pipeline...")
         self.preprocessor = ColumnTransformer(
             transformers=[
                 ("cat", OneHotEncoder(handle_unknown="ignore"), self.cat_features),
-                ("drop_ids", "drop", ["Client_ID", "Booking_ID"]),
+                ("drop_ids", "drop", ["arrival_month", "Client_ID", "Booking_ID"]),
             ],
             remainder="passthrough",
         )
 
         self.pipeline = Pipeline(
-            steps=[("preprocessor", self.preprocessor), ("regressor", LGBMClassifier(**self.parameters))]
+            steps=[
+                ("date_features", DateFeatureEngineer()),
+                ("preprocessor", self.preprocessor),
+                ("regressor", LGBMClassifier(**self.parameters)),
+            ]
         )
         logger.info("✅ Preprocessing pipeline defined.")
 

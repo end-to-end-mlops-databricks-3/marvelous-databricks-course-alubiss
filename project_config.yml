@@ -32,8 +32,6 @@ num_features:
   - no_of_special_requests
 
 date_features:
-  - arrival_date
-  - arrival_year
   - arrival_month
 
 cat_features:
