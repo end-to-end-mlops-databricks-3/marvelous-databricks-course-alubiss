@@ -15,7 +15,7 @@ parameters:
   n_estimators: 1000
   max_depth: 6
 
-hyperparameter_tuning: True
+hyperparameters_tuning: True
 
 id_cols:
  - Booking_ID

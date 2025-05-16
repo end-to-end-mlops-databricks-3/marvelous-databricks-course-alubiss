@@ -87,7 +87,7 @@ modeling_ppl.prepare_features()
 logger.info("Loaded data, prepared features.")
 
 # Train + log the model (runs everything including MLflow logging)
-if config.hyperparameter_tuning:
+if config.hyperparameters_tuning:
     modeling_ppl.tune_hyperparameters()
 modeling_ppl.train()
 modeling_ppl.log_model()

@@ -21,7 +21,7 @@ class ProjectConfig(BaseModel):
     catalog_name: str
     schema_name: str
     parameters: dict[str, Any]
-    hyperparameter_tuning: bool
+    hyperparameters_tuning: bool
     experiment_name_custom: str
     banned_clients_ids: list[str]
 
