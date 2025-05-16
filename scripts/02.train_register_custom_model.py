@@ -87,6 +87,7 @@ custom_model.prepare_features()
 logger.info("Loaded data, prepared features.")
 
 # Train + log the model (runs everything including MLflow logging)
+custom_model.tune_hyperparameters()
 custom_model.train()
 custom_model.log_model()
 logger.info("Model training completed.")

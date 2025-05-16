@@ -18,6 +18,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src"
 import mlflow
 import numpy as np
 import pandas as pd
+from hyperopt import STATUS_OK, Trials, fmin, hp, tpe
 from lightgbm import LGBMClassifier
 from loguru import logger
 from mlflow import MlflowClient
@@ -81,7 +82,7 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         client_ids = model_input["Client_ID"].values
 
         predictions = self.model.predict_proba(model_input)
-        proba_canceled = predictions[:, 1]  # weź całą kolumnę
+        proba_canceled = predictions[:, 1]
 
         adjusted_predictions = serving_pred_function(client_ids, banned_client_list, proba_canceled)
         logger.info(f"adjusted_predictions: {adjusted_predictions}")
@@ -179,6 +180,49 @@ class PocessModeling:
             ]
         )
         logger.info("✅ Preprocessing pipeline defined.")
+
+    def tune_hyperparameters(self, max_evals: int = 20) -> None:
+        """Tune hyperparameters using Hyperopt and MLflow nested runs, set best pipeline and params."""
+
+        def objective(params: dict) -> dict:
+            with mlflow.start_run(nested=True):
+                model = LGBMClassifier(**params)
+                pipeline = Pipeline(
+                    [
+                        ("date_features", DateFeatureEngineer()),
+                        ("preprocessor", self.preprocessor),
+                        ("regressor", model),
+                    ]
+                )
+                pipeline.fit(self.X_train, self.y_train)
+                y_pred = pipeline.predict(self.X_test)
+                f1 = f1_score(self.y_test, y_pred)
+                mlflow.log_params(params)
+                mlflow.log_metric("f1", f1)
+                return {"loss": -f1, "status": STATUS_OK, "model": pipeline, "params": params, "f1": f1}
+
+        space = {
+            "n_estimators": hp.choice("n_estimators", [50, 100, 200]),
+            "max_depth": hp.choice("max_depth", [3, 5, 7, 10]),
+            "learning_rate": hp.uniform("learning_rate", 0.01, 0.2),
+            "num_leaves": hp.choice("num_leaves", [15, 31, 63, 127]),
+        }
+
+        trials = Trials()
+        with mlflow.start_run(run_name="hyperopt_search", nested=True):
+            fmin(
+                fn=objective,
+                space=space,
+                algo=tpe.suggest,
+                max_evals=max_evals,
+                trials=trials,
+                rstate=np.random.default_rng(42),
+            )
+
+        best_trial = sorted(trials.results, key=lambda x: -x["f1"])[0]
+        logger.info(f"Best hyperparameters: {best_trial['params']}, best f1: {best_trial['f1']}")
+        self.parameters = best_trial["params"]
+        self.pipeline = best_trial["model"]
 
     def train(self) -> None:
         """Train the model using the prepared pipeline."""
