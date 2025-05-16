@@ -22,15 +22,14 @@ from lightgbm import LGBMClassifier
 from loguru import logger
 from mlflow import MlflowClient
 from mlflow.data.dataset_source import DatasetSource
-from mlflow.models import infer_signature
+from mlflow.models.signature import ModelSignature
+from mlflow.types import ColSpec, Schema
 from mlflow.utils.environment import _mlflow_conda_env
 from pyspark.sql import SparkSession
 from sklearn.compose import ColumnTransformer
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
-from mlflow.types import Schema, ColSpec
-from mlflow.models.signature import ModelSignature
 
 from hotel_reservations.config import ProjectConfig, Tags
 from hotel_reservations.utils import serving_pred_function
@@ -65,17 +64,20 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         client_ids = model_input["Client_ID"].values
 
         predictions = self.model.predict_proba(model_input)
-        proba_canceled = predictions[:, 1][0] # proba of cancellation
+        proba_canceled = predictions[:, 1][0]  # proba of cancellation
         logger.info(f"predictions: {proba_canceled}")
 
         adjusted_predictions = serving_pred_function(client_ids, banned_client_list, proba_canceled)
         logger.info(f"adjusted_predictions: {adjusted_predictions}")
 
-        comment= ["Banned" if client_id in banned_client_list["banned_clients_ids"].values else "None" for client_id in client_ids]
+        comment = [
+            "Banned" if client_id in banned_client_list["banned_clients_ids"].values else "None"
+            for client_id in client_ids
+        ]
 
-        out['Client_ID'] = client_ids[0]
-        out['Proba'] = adjusted_predictions[0]
-        out['Comment'] = comment[0]
+        out["Client_ID"] = client_ids[0]
+        out["Proba"] = adjusted_predictions[0]
+        out["Comment"] = comment[0]
         return out
 
 
@@ -117,7 +119,11 @@ class PocessModeling:
         logger.info("🔄 Loading data from Databricks tables...")
         self.train_set_spark = self.spark.table(f"{self.catalog_name}.{self.schema_name}.train_set")
         self.train_set = self.train_set_spark.toPandas().drop(columns=["update_timestamp_utc"])
-        self.test_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set").toPandas().drop(columns=["update_timestamp_utc"])
+        self.test_set = (
+            self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set")
+            .toPandas()
+            .drop(columns=["update_timestamp_utc"])
+        )
         self.data_version = "0"  # describe history -> retrieve
 
         self.X_train = self.train_set[self.num_features + self.cat_features + ["Client_ID", "Booking_ID"]]
@@ -142,7 +148,7 @@ class PocessModeling:
                 ("cat", OneHotEncoder(handle_unknown="ignore"), self.cat_features),
                 ("drop_ids", "drop", ["Client_ID", "Booking_ID"]),
             ],
-            remainder="passthrough"
+            remainder="passthrough",
         )
 
         self.pipeline = Pipeline(
@@ -208,44 +214,50 @@ class PocessModeling:
 
             conda_env = _mlflow_conda_env(additional_pip_deps=additional_pip_deps)
 
-            input_signature = Schema([
-                ColSpec("integer", "required_car_parking_space"),
-                ColSpec("integer", "no_of_adults"),
-                ColSpec("integer", "no_of_children"),
-                ColSpec("integer", "no_of_weekend_nights"),
-                ColSpec("integer", "no_of_week_nights"),
-                ColSpec("integer", "lead_time"),
-                ColSpec("integer", "repeated_guest"),
-                ColSpec("integer", "no_of_previous_cancellations"),
-                ColSpec("integer", "no_of_previous_bookings_not_canceled"),
-                ColSpec("float", "avg_price_per_room"),
-                ColSpec("integer", "no_of_special_requests"),
-                ColSpec("string", "type_of_meal_plan"),
-                ColSpec("string", "room_type_reserved"),
-                ColSpec("string", "market_segment_type"),
-                ColSpec("string", "country"),
-                ColSpec("integer", "is_first_quarter"),
-                ColSpec("integer", "is_second_quarter"),
-                ColSpec("integer", "is_third_quarter"),
-                ColSpec("integer", "is_fourth_quarter"),
-                ColSpec("float", "month_sin"),
-                ColSpec("float", "month_cos"),
-                ColSpec("string", "Client_ID"),
-                ColSpec("string", "Booking_ID")
-            ])
+            input_signature = Schema(
+                [
+                    ColSpec("integer", "required_car_parking_space"),
+                    ColSpec("integer", "no_of_adults"),
+                    ColSpec("integer", "no_of_children"),
+                    ColSpec("integer", "no_of_weekend_nights"),
+                    ColSpec("integer", "no_of_week_nights"),
+                    ColSpec("integer", "lead_time"),
+                    ColSpec("integer", "repeated_guest"),
+                    ColSpec("integer", "no_of_previous_cancellations"),
+                    ColSpec("integer", "no_of_previous_bookings_not_canceled"),
+                    ColSpec("float", "avg_price_per_room"),
+                    ColSpec("integer", "no_of_special_requests"),
+                    ColSpec("string", "type_of_meal_plan"),
+                    ColSpec("string", "room_type_reserved"),
+                    ColSpec("string", "market_segment_type"),
+                    ColSpec("string", "country"),
+                    ColSpec("integer", "is_first_quarter"),
+                    ColSpec("integer", "is_second_quarter"),
+                    ColSpec("integer", "is_third_quarter"),
+                    ColSpec("integer", "is_fourth_quarter"),
+                    ColSpec("float", "month_sin"),
+                    ColSpec("float", "month_cos"),
+                    ColSpec("string", "Client_ID"),
+                    ColSpec("string", "Booking_ID"),
+                ]
+            )
 
-            output_signature = Schema([
-                ColSpec("string", "Client_ID"),
-                ColSpec("double", "Proba"),
-                ColSpec("string", "Comment"),
-            ])
+            output_signature = Schema(
+                [
+                    ColSpec("string", "Client_ID"),
+                    ColSpec("double", "Proba"),
+                    ColSpec("string", "Comment"),
+                ]
+            )
 
             signature = ModelSignature(inputs=input_signature, outputs=output_signature)
 
             mlflow.pyfunc.log_model(
                 python_model=ModelWrapper(self.pipeline),
                 artifact_path="pyfunc-alubiss-model",
-                artifacts={'banned_client_list': f"/Volumes/{self.catalog_name}/{self.schema_name}/alubiss/banned_client_list.csv"},
+                artifacts={
+                    "banned_client_list": f"/Volumes/{self.catalog_name}/{self.schema_name}/alubiss/banned_client_list.csv"
+                },
                 code_paths=self.code_paths,
                 conda_env=conda_env,
                 signature=signature,

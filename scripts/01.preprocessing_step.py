@@ -1,13 +1,12 @@
-import argparse
+import os
+import sys
+from pathlib import Path
 
 import yaml
 from loguru import logger
 from pyspark.sql import SparkSession
 
-import sys
-import os
-from pathlib import Path
-sys.path.append(str(Path.cwd().parent / 'src'))
+sys.path.append(str(Path.cwd().parent / "src"))
 
 from hotel_reservations.config import ProjectConfig
 from hotel_reservations.data_processor import DataProcessor
@@ -25,7 +24,10 @@ logger.info(yaml.dump(config, default_flow_style=False))
 spark = SparkSession.builder.getOrCreate()
 
 df = spark.read.csv(
-    f"/Volumes/{config.catalog_name}/{config.schema_name}/alubiss/hotel_reservations.csv", sep = ";", header=True, inferSchema=True
+    f"/Volumes/{config.catalog_name}/{config.schema_name}/alubiss/hotel_reservations.csv",
+    sep=";",
+    header=True,
+    inferSchema=True,
 ).toPandas()
 # df = spark.read.csv(
 #     f"C:/Users/tomek/Documents/GitHub/marvelous-databricks-course-alubiss/tests/test_data/sample.csv", sep = ";", header=True, inferSchema=True

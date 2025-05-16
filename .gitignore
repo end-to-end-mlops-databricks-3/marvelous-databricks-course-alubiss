@@ -16,6 +16,7 @@ typings/
 # Files
 scripts/banned_client_list.csv
 src/read_model.ipynb
+getpip.py
 
 # Distribution / packaging
 .Python

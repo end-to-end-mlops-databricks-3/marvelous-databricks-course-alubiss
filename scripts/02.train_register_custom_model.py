@@ -1,10 +1,9 @@
 import argparse
-
 import os
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path.cwd().parent / 'src'))
+sys.path.append(str(Path.cwd().parent / "src"))
 base_dir = os.path.abspath(str(Path.cwd().parent))
 config_path = os.path.join(base_dir, "project_config.yml")
 
@@ -63,13 +62,7 @@ try:
     )
     args = parser.parse_args()
 except:
-    args = argparse.Namespace(
-        root_path=config_path,
-        env='dev',
-        git_sha='123',
-        job_run_id='unique_id',
-        branch='alubiss'
-    )
+    args = argparse.Namespace(root_path=config_path, env="dev", git_sha="123", job_run_id="unique_id", branch="alubiss")
 
 root_path = args.root_path
 config_path = f"{root_path}"
