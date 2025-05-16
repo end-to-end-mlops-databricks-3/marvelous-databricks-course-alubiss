@@ -122,6 +122,7 @@ class PocessModeling:
         # Extract settings from the config
         self.num_features = self.config.num_features
         self.cat_features = self.config.cat_features
+        self.date_features = self.config.date_features
         self.target = self.config.target
         self.parameters = self.config.parameters
         self.catalog_name = self.config.catalog_name
@@ -146,9 +147,13 @@ class PocessModeling:
         )
         self.data_version = "0"  # describe history -> retrieve
 
-        self.X_train = self.train_set[self.num_features + self.cat_features + ["Client_ID", "Booking_ID"]]
+        self.X_train = self.train_set[
+            self.num_features + self.cat_features + self.date_features + ["Client_ID", "Booking_ID"]
+        ]
         self.y_train = self.train_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
-        self.X_test = self.test_set[self.num_features + self.cat_features + ["Client_ID", "Booking_ID"]]
+        self.X_test = self.test_set[
+            self.num_features + self.cat_features + self.date_features + ["Client_ID", "Booking_ID"]
+        ]
         self.y_test = self.test_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
         self.train_set = self.train_set.drop(columns=[self.target])
         self.test_set = self.test_set.drop(columns=[self.target])
