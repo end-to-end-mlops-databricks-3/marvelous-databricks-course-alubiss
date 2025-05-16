@@ -183,6 +183,7 @@ class PocessModeling:
 
     def tune_hyperparameters(self, max_evals: int = 20) -> None:
         """Tune hyperparameters using Hyperopt and MLflow nested runs, set best pipeline and params."""
+        mlflow.set_experiment(self.experiment_name)
 
         def objective(params: dict) -> dict:
             with mlflow.start_run(nested=True):
