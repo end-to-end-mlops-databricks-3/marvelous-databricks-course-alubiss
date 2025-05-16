@@ -70,22 +70,18 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
 
     def predict(
         self, context: mlflow.pyfunc.PythonModelContext, model_input: pd.DataFrame | np.ndarray
-    ) -> dict[str, float]:
+    ) -> pd.DataFrame:
         """Make predictions using the wrapped model.
 
         :param context: The MLflow context (unused in this implementation).
         :param model_input: Input data for making predictions.
         :return: A dictionary containing the adjusted prediction.
         """
-        logger.info(f"model_input:{model_input}")
-        out = {}
-
         banned_client_list = pd.read_csv(context.artifacts["banned_client_list"], sep=";")
         client_ids = model_input["Client_ID"].values
 
         predictions = self.model.predict_proba(model_input)
-        proba_canceled = predictions[:, 1][0]  # proba of cancellation
-        logger.info(f"predictions: {proba_canceled}")
+        proba_canceled = predictions[:, 1]  # weź całą kolumnę
 
         adjusted_predictions = serving_pred_function(client_ids, banned_client_list, proba_canceled)
         logger.info(f"adjusted_predictions: {adjusted_predictions}")
@@ -95,10 +91,13 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
             for client_id in client_ids
         ]
 
-        out["Client_ID"] = client_ids[0]
-        out["Proba"] = adjusted_predictions[0]
-        out["Comment"] = comment[0]
-        return out
+        return pd.DataFrame(
+            {
+                "Client_ID": client_ids,
+                "Proba": adjusted_predictions,
+                "Comment": comment,
+            }
+        )
 
 
 class PocessModeling:
