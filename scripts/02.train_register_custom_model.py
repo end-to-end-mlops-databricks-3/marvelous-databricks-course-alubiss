@@ -76,21 +76,22 @@ tags_dict = {"git_sha": args.git_sha, "branch": args.branch, "job_run_id": args.
 tags = Tags(**tags_dict)
 
 # Initialize model
-custom_model = PocessModeling(
+modeling_ppl = PocessModeling(
     config=config, tags=tags, spark=spark, code_paths=["../src/hotel_reservations/models/modeling_pipeline.py"]
 )
 logger.info("Model initialized.")
 
 # Load data and prepare features
-custom_model.load_data()
-custom_model.prepare_features()
+modeling_ppl.load_data()
+modeling_ppl.prepare_features()
 logger.info("Loaded data, prepared features.")
 
 # Train + log the model (runs everything including MLflow logging)
-custom_model.tune_hyperparameters()
-custom_model.train()
-custom_model.log_model()
+if config.hyperparameter_tuning:
+    modeling_ppl.tune_hyperparameters()
+modeling_ppl.train()
+modeling_ppl.log_model()
 logger.info("Model training completed.")
 
-custom_model.register_model()
+modeling_ppl.register_model()
 logger.info("Registered model")
