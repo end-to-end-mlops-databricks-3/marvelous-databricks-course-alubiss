@@ -58,7 +58,8 @@ def test_column_transformations(sample_data: pd.DataFrame, config: ProjectConfig
     processor = DataProcessor(pandas_df=sample_data, config=config, spark=spark_session)
     processor.preprocess()
 
-    assert "arrival_month" not in processor.df.columns
+    assert "arrival_month" in processor.df.columns
+    assert "arrival_year" not in processor.df.columns
     assert processor.df["Booking_ID"].dtype == "object"
     assert processor.df["type_of_meal_plan"].dtype == "category"
     assert processor.df["required_car_parking_space"].dtype == "category"
