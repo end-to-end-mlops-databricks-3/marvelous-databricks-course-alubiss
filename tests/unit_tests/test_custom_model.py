@@ -2,7 +2,7 @@
 
 import mlflow
 import pandas as pd
-from conftest import CATALOG_DIR, TRACKING_URI
+from conftest import TRACKING_URI
 from lightgbm import LGBMClassifier
 from loguru import logger
 from mlflow.entities.model_registry.registered_model import RegisteredModel
@@ -12,9 +12,10 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 from hotel_reservations.config import ProjectConfig, Tags
-from hotel_reservations.models.modeling_pipeline import PocessModeling, DateFeatureEngineer
+from hotel_reservations.models.modeling_pipeline import DateFeatureEngineer, PocessModeling
 
 mlflow.set_tracking_uri(TRACKING_URI)
+
 
 def test_custom_model_init(config: ProjectConfig, tags: Tags, spark_session: SparkSession) -> None:
     """Test the initialization of PocessModeling.
@@ -63,15 +64,53 @@ def test_train(mock_custom_model: PocessModeling) -> None:
     mock_custom_model.load_data()
     mock_custom_model.prepare_features()
     mock_custom_model.train()
-    expected_feature_names = ['cat__type_of_meal_plan_Meal Plan 1', 'cat__type_of_meal_plan_Meal Plan 2', 'cat__type_of_meal_plan_Meal Plan 3', 'cat__type_of_meal_plan_Not Selected', 'cat__required_car_parking_space_0', 'cat__required_car_parking_space_1', 'cat__room_type_reserved_Room_Type 1', 'cat__room_type_reserved_Room_Type 2', 'cat__room_type_reserved_Room_Type 3', 'cat__room_type_reserved_Room_Type 4', 'cat__room_type_reserved_Room_Type 5', 'cat__room_type_reserved_Room_Type 6', 'cat__room_type_reserved_Room_Type 7', 'cat__market_segment_type_Aviation', 'cat__market_segment_type_Complementary', 'cat__market_segment_type_Corporate', 'cat__market_segment_type_Offline', 'cat__market_segment_type_Online', 'cat__country_PL', 'cat__country_UK', 'remainder__no_of_adults', 'remainder__no_of_children', 'remainder__no_of_weekend_nights', 'remainder__no_of_week_nights', 'remainder__lead_time', 'remainder__repeated_guest', 'remainder__no_of_previous_cancellations', 'remainder__no_of_previous_bookings_not_canceled', 'remainder__avg_price_per_room', 'remainder__no_of_special_requests', 'remainder__month_sin', 'remainder__month_cos', 'remainder__is_first_quarter', 'remainder__is_second_quarter', 'remainder__is_third_quarter', 'remainder__is_fourth_quarter']
+    expected_feature_names = [
+        "cat__type_of_meal_plan_Meal Plan 1",
+        "cat__type_of_meal_plan_Meal Plan 2",
+        "cat__type_of_meal_plan_Meal Plan 3",
+        "cat__type_of_meal_plan_Not Selected",
+        "cat__required_car_parking_space_0",
+        "cat__required_car_parking_space_1",
+        "cat__room_type_reserved_Room_Type 1",
+        "cat__room_type_reserved_Room_Type 2",
+        "cat__room_type_reserved_Room_Type 3",
+        "cat__room_type_reserved_Room_Type 4",
+        "cat__room_type_reserved_Room_Type 5",
+        "cat__room_type_reserved_Room_Type 6",
+        "cat__room_type_reserved_Room_Type 7",
+        "cat__market_segment_type_Aviation",
+        "cat__market_segment_type_Complementary",
+        "cat__market_segment_type_Corporate",
+        "cat__market_segment_type_Offline",
+        "cat__market_segment_type_Online",
+        "cat__country_PL",
+        "cat__country_UK",
+        "remainder__no_of_adults",
+        "remainder__no_of_children",
+        "remainder__no_of_weekend_nights",
+        "remainder__no_of_week_nights",
+        "remainder__lead_time",
+        "remainder__repeated_guest",
+        "remainder__no_of_previous_cancellations",
+        "remainder__no_of_previous_bookings_not_canceled",
+        "remainder__avg_price_per_room",
+        "remainder__no_of_special_requests",
+        "remainder__month_sin",
+        "remainder__month_cos",
+        "remainder__is_first_quarter",
+        "remainder__is_second_quarter",
+        "remainder__is_third_quarter",
+        "remainder__is_fourth_quarter",
+    ]
     preprocessor = mock_custom_model.pipeline.named_steps["preprocessor"]
 
     assert len(list(preprocessor.get_feature_names_out())) == len(expected_feature_names)
-    assert sorted(expected_feature_names) == sorted(list(preprocessor.get_feature_names_out()))
+    assert sorted(expected_feature_names) == sorted(preprocessor.get_feature_names_out())
 
 
-def test_log_model_with_PandasDataset(mock_custom_model: PocessModeling):    
+def test_log_model_with_PandasDataset(mock_custom_model: PocessModeling) -> None:
     """Test model logging with PandasDataset validation.
+
     Verifies that the model's pipeline captures correct feature dimensions and names,
     then checks proper dataset type handling during model logging.
 
@@ -80,11 +119,48 @@ def test_log_model_with_PandasDataset(mock_custom_model: PocessModeling):
     mock_custom_model.load_data()
     mock_custom_model.prepare_features()
     mock_custom_model.train()
-    expected_feature_names = ['cat__type_of_meal_plan_Meal Plan 1', 'cat__type_of_meal_plan_Meal Plan 2', 'cat__type_of_meal_plan_Meal Plan 3', 'cat__type_of_meal_plan_Not Selected', 'cat__required_car_parking_space_0', 'cat__required_car_parking_space_1', 'cat__room_type_reserved_Room_Type 1', 'cat__room_type_reserved_Room_Type 2', 'cat__room_type_reserved_Room_Type 3', 'cat__room_type_reserved_Room_Type 4', 'cat__room_type_reserved_Room_Type 5', 'cat__room_type_reserved_Room_Type 6', 'cat__room_type_reserved_Room_Type 7', 'cat__market_segment_type_Aviation', 'cat__market_segment_type_Complementary', 'cat__market_segment_type_Corporate', 'cat__market_segment_type_Offline', 'cat__market_segment_type_Online', 'cat__country_PL', 'cat__country_UK', 'remainder__no_of_adults', 'remainder__no_of_children', 'remainder__no_of_weekend_nights', 'remainder__no_of_week_nights', 'remainder__lead_time', 'remainder__repeated_guest', 'remainder__no_of_previous_cancellations', 'remainder__no_of_previous_bookings_not_canceled', 'remainder__avg_price_per_room', 'remainder__no_of_special_requests', 'remainder__month_sin', 'remainder__month_cos', 'remainder__is_first_quarter', 'remainder__is_second_quarter', 'remainder__is_third_quarter', 'remainder__is_fourth_quarter']
+    expected_feature_names = [
+        "cat__type_of_meal_plan_Meal Plan 1",
+        "cat__type_of_meal_plan_Meal Plan 2",
+        "cat__type_of_meal_plan_Meal Plan 3",
+        "cat__type_of_meal_plan_Not Selected",
+        "cat__required_car_parking_space_0",
+        "cat__required_car_parking_space_1",
+        "cat__room_type_reserved_Room_Type 1",
+        "cat__room_type_reserved_Room_Type 2",
+        "cat__room_type_reserved_Room_Type 3",
+        "cat__room_type_reserved_Room_Type 4",
+        "cat__room_type_reserved_Room_Type 5",
+        "cat__room_type_reserved_Room_Type 6",
+        "cat__room_type_reserved_Room_Type 7",
+        "cat__market_segment_type_Aviation",
+        "cat__market_segment_type_Complementary",
+        "cat__market_segment_type_Corporate",
+        "cat__market_segment_type_Offline",
+        "cat__market_segment_type_Online",
+        "cat__country_PL",
+        "cat__country_UK",
+        "remainder__no_of_adults",
+        "remainder__no_of_children",
+        "remainder__no_of_weekend_nights",
+        "remainder__no_of_week_nights",
+        "remainder__lead_time",
+        "remainder__repeated_guest",
+        "remainder__no_of_previous_cancellations",
+        "remainder__no_of_previous_bookings_not_canceled",
+        "remainder__avg_price_per_room",
+        "remainder__no_of_special_requests",
+        "remainder__month_sin",
+        "remainder__month_cos",
+        "remainder__is_first_quarter",
+        "remainder__is_second_quarter",
+        "remainder__is_third_quarter",
+        "remainder__is_fourth_quarter",
+    ]
     preprocessor = mock_custom_model.pipeline.named_steps["preprocessor"]
-    
+
     assert len(list(preprocessor.get_feature_names_out())) == len(expected_feature_names)
-    assert sorted(expected_feature_names) == sorted(list(preprocessor.get_feature_names_out()))
+    assert sorted(expected_feature_names) == sorted(preprocessor.get_feature_names_out())
 
     mock_custom_model.log_model(dataset_type="PandasDataset")
 
@@ -160,6 +236,7 @@ def test_retrieve_current_run_metadata(mock_custom_model: PocessModeling) -> Non
     assert isinstance(params, dict)
     assert params
 
+
 def test_load_latest_model_and_predict(mock_custom_model: PocessModeling) -> None:
     """Test the process of loading the latest model and making predictions.
 
@@ -196,46 +273,30 @@ def test_load_latest_model_and_predict(mock_custom_model: PocessModeling) -> Non
         "no_of_special_requests",
         "arrival_month",
         "Booking_ID",
-        "Client_ID"
+        "Client_ID",
     ]
-    data =[[
-        "Meal Plan 1",
-        0,
-        "Room_Type 1",
-        "Online",
-        "PL",
-        2,
-        1,
-        2,
-        1,
-        26,
-        0,
-        0,
-        0,
-        161,
-        0,
-        10,
-        "INN25630",
-        "ABCDE"],
+    data = [
+        ["Meal Plan 1", 0, "Room_Type 1", "Online", "PL", 2, 1, 2, 1, 26, 0, 0, 0, 161, 0, 10, "INN25630", "ABCDE"],
         [
-        "Meal Plan 1",
-        0,
-        "Room_Type 1",
-        "Online",
-        "PL",
-        2,
-        1,
-        2,
-        1,
-        26,
-        0,
-        0,
-        0,
-        161,
-        0,
-        10,
-        "INN25630",
-        "client_banned"]
+            "Meal Plan 1",
+            0,
+            "Room_Type 1",
+            "Online",
+            "PL",
+            2,
+            1,
+            2,
+            1,
+            26,
+            0,
+            0,
+            0,
+            161,
+            0,
+            10,
+            "INN25630",
+            "client_banned",
+        ],
     ]
 
     input_data = pd.DataFrame(data, columns=columns)
@@ -252,7 +313,7 @@ def test_load_latest_model_and_predict(mock_custom_model: PocessModeling) -> Non
         "no_of_previous_bookings_not_canceled": "int32",
         "avg_price_per_room": "float32",
         "no_of_special_requests": "int32",
-        "arrival_month": "int32"
+        "arrival_month": "int32",
     }
 
     input_data = input_data.astype(cols_types)

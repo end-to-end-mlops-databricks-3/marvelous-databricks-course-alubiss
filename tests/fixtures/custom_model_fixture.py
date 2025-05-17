@@ -89,15 +89,20 @@ def build_whl_file() -> None:
         # Restore the original working directory
         os.chdir(original_directory)
 
+
 @pytest.fixture
-def banned_client_list_path(tmp_path):
+def banned_client_list_path(tmp_path: Path) -> str:
+    """Fixture to create a temporary CSV file with banned client IDs."""
     df = pd.DataFrame({"banned_clients_ids": ["client_banned", "client_banned2"]})
     file_path = tmp_path / "banned_client_list.csv"
     df.to_csv(file_path, index=False, sep=";")
     return str(file_path)
 
+
 @pytest.fixture(scope="function")
-def mock_custom_model(config: ProjectConfig, tags: Tags, spark_session: SparkSession, banned_client_list_path: str) -> PocessModeling:
+def mock_custom_model(
+    config: ProjectConfig, tags: Tags, spark_session: SparkSession, banned_client_list_path: str
+) -> PocessModeling:
     """Fixture that provides a CustomModel instance with mocked Spark interactions.
 
     Initializes the model with test data and mocks Spark DataFrame conversions to pandas.

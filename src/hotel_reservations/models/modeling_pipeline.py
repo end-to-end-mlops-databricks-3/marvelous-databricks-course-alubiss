@@ -131,6 +131,7 @@ class PocessModeling:
         self.tags = tags.dict()
         self.code_paths = code_paths
         self.banned_clients_ids = self.config.banned_clients_ids
+        self.banned_client_path = f"/Volumes/{self.catalog_name}/{self.schema_name}/alubiss/banned_client_list.csv"
 
     def load_data(self) -> None:
         """Load training and testing data from Delta tables.
