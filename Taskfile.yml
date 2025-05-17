@@ -4,7 +4,7 @@ dotenv: [.env]
 vars:
   PACKAGE_IMPORT_NAME: hotel_reservation
   PYTHON_VERSION: 3.11
-  ENVIRONMENT: {{.ENVIRONMENT | default "dev"}}
+  ENVIRONMENT: dev
 
 tasks:
   create-venv:
@@ -13,7 +13,7 @@ tasks:
       - uv venv -p {{.PYTHON_VERSION}} .venv
     silent: false
 
-  sync:
+  auto-sync:
     desc: Sync dependencies based on the environment
     cmds:
       - if [ "{{.ENVIRONMENT}}" = "dev" ]; then task sync-dev; fi
@@ -29,9 +29,9 @@ tasks:
   sync-test:
     desc: Sync only test dependencies
     cmds:
-      - rm -rf .venv
-      - task: create-venv
-      - uv sync --extra test
+        - rm -rf .venv
+        - task: create-venv
+        - source .venv/Scripts/activate && uv sync --extra test
 
   lint:
     desc: Run pre-commit hooks
@@ -42,6 +42,10 @@ tasks:
     desc: Print all tasks defined in the Taskfile
     cmd: task -l
     silent: true
+
+  sync-databricks:
+    desc: Sync the cloned repo from local machine to Databricks workspace
+    cmd: pip install -e .pyproject.toml
 
   default:
     cmds:

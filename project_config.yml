@@ -8,13 +8,18 @@ dev:
   catalog_name: mlops_dev
   schema_name: olalubic
 
+experiment_name_custom: /Shared/alubiss-model-custom
+
 parameters:
   learning_rate: 0.01
   n_estimators: 1000
   max_depth: 6
 
+hyperparameters_tuning: True
+
 id_cols:
  - Booking_ID
+ - Client_ID
 
 num_features:
   - no_of_adults
@@ -29,8 +34,6 @@ num_features:
   - no_of_special_requests
 
 date_features:
-  - arrival_date
-  - arrival_year
   - arrival_month
 
 cat_features:
@@ -41,3 +44,9 @@ cat_features:
   - country
 
 target: booking_status
+
+banned_clients_ids:
+  - "12345"
+  - "67890"
+  - "ABCDE"
+  - "95890"
