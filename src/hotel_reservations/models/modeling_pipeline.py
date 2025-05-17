@@ -30,6 +30,7 @@ from pyspark.sql import SparkSession
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
@@ -182,26 +183,33 @@ class PocessModeling:
         )
         logger.info("✅ Preprocessing pipeline defined.")
 
-    def tune_hyperparameters(self, max_evals: int = 20) -> None:
-        """Tune hyperparameters using Hyperopt and MLflow nested runs, set best pipeline and params."""
+    def tune_hyperparameters(self, max_evals: int = 20, n_splits: int = 3) -> None:
+        """Tune hyperparameters using Hyperopt and MLflow nested runs, set best pipeline and params with CV."""
         mlflow.set_experiment(self.experiment_name)
 
         def objective(params: dict) -> dict:
             with mlflow.start_run(nested=True):
-                model = LGBMClassifier(**params)
-                pipeline = Pipeline(
-                    [
-                        ("date_features", DateFeatureEngineer()),
-                        ("preprocessor", self.preprocessor),
-                        ("regressor", model),
-                    ]
-                )
-                pipeline.fit(self.X_train, self.y_train)
-                y_pred = pipeline.predict(self.X_test)
-                f1 = f1_score(self.y_test, y_pred)
+                f1_scores = []
+                skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
+                for train_idx, valid_idx in skf.split(self.X_train, self.y_train):
+                    X_tr, X_val = self.X_train.iloc[train_idx], self.X_train.iloc[valid_idx]
+                    y_tr, y_val = self.y_train.iloc[train_idx], self.y_train.iloc[valid_idx]
+                    model = LGBMClassifier(**params)
+                    pipeline = Pipeline(
+                        [
+                            ("date_features", DateFeatureEngineer()),
+                            ("preprocessor", self.preprocessor),
+                            ("regressor", model),
+                        ]
+                    )
+                    pipeline.fit(X_tr, y_tr)
+                    y_pred = pipeline.predict(X_val)
+                    f1 = f1_score(y_val, y_pred)
+                    f1_scores.append(f1)
+                mean_f1 = np.mean(f1_scores)
                 mlflow.log_params(params)
-                mlflow.log_metric("f1", f1)
-                return {"loss": -f1, "status": STATUS_OK, "model": pipeline, "params": params, "f1": f1}
+                mlflow.log_metric("mean_f1_cv", mean_f1)
+                return {"loss": -mean_f1, "status": STATUS_OK, "params": params, "f1": mean_f1, "pipeline": pipeline}
 
         space = {
             "n_estimators": hp.choice("n_estimators", [50, 100, 200]),
@@ -222,9 +230,16 @@ class PocessModeling:
             )
 
         best_trial = sorted(trials.results, key=lambda x: -x["f1"])[0]
-        logger.info(f"Best hyperparameters: {best_trial['params']}, best f1: {best_trial['f1']}")
+        logger.info(f"Best hyperparameters: {best_trial['params']}, best mean f1 (CV): {best_trial['f1']}")
         self.parameters = best_trial["params"]
-        self.pipeline = best_trial["model"]
+        self.pipeline = Pipeline(
+            [
+                ("date_features", DateFeatureEngineer()),
+                ("preprocessor", self.preprocessor),
+                ("regressor", LGBMClassifier(**self.parameters)),
+            ]
+        )
+        self.pipeline.fit(self.X_train, self.y_train)
 
     def train(self) -> None:
         """Train the model using the prepared pipeline."""
