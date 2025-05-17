@@ -12,6 +12,7 @@ __pycache__/
 # Folders
 # data/
 typings/
+tests/mlruns
 
 # Files
 scripts/banned_client_list.csv

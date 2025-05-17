@@ -139,11 +139,11 @@ class PocessModeling:
         """
         logger.info("🔄 Loading data from Databricks tables...")
         self.train_set_spark = self.spark.table(f"{self.catalog_name}.{self.schema_name}.train_set")
-        self.train_set = self.train_set_spark.toPandas().drop(columns=["update_timestamp_utc"])
+        self.train_set = self.train_set_spark.toPandas().drop(columns=["update_timestamp_utc"], errors="ignore")
         self.test_set = (
             self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set")
             .toPandas()
-            .drop(columns=["update_timestamp_utc"])
+            .drop(columns=["update_timestamp_utc"], errors="ignore")
         )
         self.data_version = "0"  # describe history -> retrieve
 
@@ -319,9 +319,7 @@ class PocessModeling:
             mlflow.pyfunc.log_model(
                 python_model=ModelWrapper(self.pipeline),
                 artifact_path="pyfunc-alubiss-model",
-                artifacts={
-                    "banned_client_list": f"/Volumes/{self.catalog_name}/{self.schema_name}/alubiss/banned_client_list.csv"
-                },
+                artifacts={"banned_client_list": self.banned_client_path},
                 code_paths=self.code_paths,
                 conda_env=conda_env,
                 signature=signature,
