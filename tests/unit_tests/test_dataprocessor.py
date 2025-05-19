@@ -1,5 +1,10 @@
 """Unit tests for DataProcessor."""
 
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+
 import pandas as pd
 import pytest
 from conftest import CATALOG_DIR
@@ -53,7 +58,8 @@ def test_column_transformations(sample_data: pd.DataFrame, config: ProjectConfig
     processor = DataProcessor(pandas_df=sample_data, config=config, spark=spark_session)
     processor.preprocess()
 
-    assert "arrival_month" not in processor.df.columns
+    assert "arrival_month" in processor.df.columns
+    assert "arrival_year" not in processor.df.columns
     assert processor.df["Booking_ID"].dtype == "object"
     assert processor.df["type_of_meal_plan"].dtype == "category"
     assert processor.df["required_car_parking_space"].dtype == "category"
@@ -91,16 +97,9 @@ def test_column_selection(sample_data: pd.DataFrame, config: ProjectConfig, spar
     processor = DataProcessor(pandas_df=sample_data, config=config, spark=spark_session)
     processor.preprocess()
 
-    created_columns = [
-        "month_sin",
-        "month_cos",
-        "is_first_quarter",
-        "is_second_quarter",
-        "is_third_quarter",
-        "is_fourth_quarter",
-    ]
-
-    expected_columns = config.cat_features + config.num_features + [config.target, "Booking_ID"] + created_columns
+    expected_columns = (
+        config.cat_features + config.num_features + [config.target, "arrival_month", "Booking_ID", "Client_ID"]
+    )
     assert set(processor.df.columns) == set(expected_columns)
 
 

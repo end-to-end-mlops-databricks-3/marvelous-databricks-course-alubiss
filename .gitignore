@@ -11,6 +11,13 @@ __pycache__/
 
 # Folders
 # data/
+typings/
+tests/mlruns
+
+# Files
+scripts/banned_client_list.csv
+src/read_model.ipynb
+getpip.py
 
 # Distribution / packaging
 .Python
