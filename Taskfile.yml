@@ -4,7 +4,6 @@ dotenv: [.env]
 vars:
   PACKAGE_IMPORT_NAME: hotel_reservation
   PYTHON_VERSION: 3.11
-  ENVIRONMENT: dev
 
 tasks:
   create-venv:
@@ -13,18 +12,12 @@ tasks:
       - uv venv -p {{.PYTHON_VERSION}} .venv
     silent: false
 
-  auto-sync:
-    desc: Sync dependencies based on the environment
-    cmds:
-      - if [ "{{.ENVIRONMENT}}" = "dev" ]; then task sync-dev; fi
-      - if [ "{{.ENVIRONMENT}}" = "test" ]; then task sync-test; fi
-
   sync-dev:
     desc: Sync project dependencies with optionals
     cmds:
       - rm -rf .venv
       - task: create-venv
-      - uv sync --extra dev
+      - source .venv/Scripts/activate && uv sync --extra dev
 
   sync-test:
     desc: Sync only test dependencies
