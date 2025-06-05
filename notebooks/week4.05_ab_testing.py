@@ -84,7 +84,6 @@ model_B_uri = f"models:/mlops_dev.olalubic.{basic_model_b.model_name}@latest-mod
 # COMMAND ----------
 
 import pandas as pd
-from loguru import logger
 
 # define wrapper
 class ModelWrapper(mlflow.pyfunc.PythonModel):
@@ -113,7 +112,6 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
                 "Banned" if client_id in banned_client_list["banned_clients_ids"].values else "None"
                 for client_id in client_ids
             ]
-            logger.info("MODEL A")
             return pd.DataFrame(
                 {
                     "Client_ID": client_ids,
@@ -134,7 +132,6 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
                 "Banned" if client_id in banned_client_list["banned_clients_ids"].values else "None"
                 for client_id in client_ids
             ]
-            logger.info("MODEL B")
             return pd.DataFrame(
                 {
                     "Client_ID": client_ids,
@@ -183,7 +180,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
 mlflow.set_experiment(experiment_name="/Shared/model-ab-testing")
-model_name = f"{catalog_name}.{schema_name}.alubiss_model_pyfunc_ab_test"
+model_name = f"{catalog_name}.{schema_name}.model_pyfunc_ab_test"
 wrapped_model = ModelWrapper()
 
 with mlflow.start_run() as run:
@@ -234,6 +231,111 @@ with mlflow.start_run() as run:
 model_version = mlflow.register_model(
     model_uri=f"runs:/{run_id}/pyfunc-alubiss-model-ab", name=model_name, tags=tags.dict()
 )
+
+latest_version = model_version.version
+
+from mlflow import MlflowClient
+
+client = MlflowClient()
+client.set_registered_model_alias(
+    name=model_name,
+    alias="latest-ab-model",
+    version=latest_version,
+)
+
+
+# COMMAND ----------
+
+import pandas as pd
+import mlflow
+
+columns = [
+    "type_of_meal_plan",
+    "required_car_parking_space",
+    "room_type_reserved",
+    "market_segment_type",
+    "country",
+    "no_of_adults",
+    "no_of_children",
+    "no_of_weekend_nights",
+    "no_of_week_nights",
+    "lead_time",
+    "repeated_guest",
+    "no_of_previous_cancellations",
+    "no_of_previous_bookings_not_canceled",
+    "avg_price_per_room",
+    "no_of_special_requests",
+    "arrival_month",
+    "Booking_ID",
+    "Client_ID"
+  ]
+data =[[
+      "Meal Plan 1",
+      0,
+      "Room_Type 1",
+      "Online",
+      "PL",
+      2,
+      1,
+      2,
+      1,
+      26,
+      0,
+      0,
+      0,
+      161,
+      0,
+      10,
+      "INN25630",
+      "ABCDE"],
+      [
+      "Meal Plan 1",
+      0,
+      "Room_Type 1",
+      "Online",
+      "PL",
+      2,
+      1,
+      2,
+      1,
+      26,
+      0,
+      0,
+      0,
+      161,
+      0,
+      10,
+      "INN25630",
+      "1sw2221"]
+]
+
+df = pd.DataFrame(data, columns=columns)
+
+cols_types = {
+    "required_car_parking_space": "int32",
+    "no_of_adults": "int32",
+    "no_of_children": "int32",
+    "no_of_weekend_nights": "int32",
+    "no_of_week_nights": "int32",
+    "lead_time": "int32",
+    "repeated_guest": "int32",
+    "no_of_previous_cancellations": "int32",
+    "no_of_previous_bookings_not_canceled": "int32",
+    "avg_price_per_room": "float32",
+    "no_of_special_requests": "int32",
+    "arrival_month": "int32"
+}
+
+df = df.astype(cols_types)
+
+# COMMAND ----------
+
+import hotel_reservations
+
+model_uri = f"models:/{model_name}@latest-ab-model"
+model = mlflow.pyfunc.load_model(model_uri)
+predictions = model.predict(df)
+predictions
 
 # COMMAND ----------
 
