@@ -136,3 +136,8 @@ response = requests.post(
     headers={"Authorization": f"Bearer {os.environ['DBR_TOKEN']}"},
     json={"dataframe_split": {"columns": ["Client_ID"], "data": [["27633"]]}},
 )
+response.text
+
+# COMMAND ----------
+
+

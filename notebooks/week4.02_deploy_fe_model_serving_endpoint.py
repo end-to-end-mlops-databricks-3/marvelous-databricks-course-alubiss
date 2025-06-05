@@ -48,7 +48,6 @@ feature_model_server.create_online_table()
 # Deploy the model serving endpoint with feature lookup
 feature_model_server.deploy_or_update_serving_endpoint()
 
-
 # COMMAND ----------
 
 # Create a sample request body
