@@ -1,10 +1,7 @@
 """FeatureLookUp model implementation."""
 
-from datetime import datetime
-
 import os
 import sys
-from typing import Literal
 
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../src")))
 
@@ -94,7 +91,11 @@ class FeatureLookUpModel:
         Drops specified columns and casts 'YearBuilt' to integer type.
         """
         self.train_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.train_set").drop(
-            "repeated_guest", "no_of_previous_cancellations", "no_of_previous_bookings_not_canceled", "avg_price_per_room", "no_of_special_requests"
+            "repeated_guest",
+            "no_of_previous_cancellations",
+            "no_of_previous_bookings_not_canceled",
+            "avg_price_per_room",
+            "no_of_special_requests",
         )
         self.test_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set").toPandas()
 
@@ -117,13 +118,22 @@ class FeatureLookUpModel:
             feature_lookups=[
                 FeatureLookup(
                     table_name=self.feature_table_name,
-                    feature_names=["repeated_guest", "no_of_previous_cancellations", "no_of_previous_bookings_not_canceled", "avg_price_per_room", "no_of_special_requests"],
+                    feature_names=[
+                        "repeated_guest",
+                        "no_of_previous_cancellations",
+                        "no_of_previous_bookings_not_canceled",
+                        "avg_price_per_room",
+                        "no_of_special_requests",
+                    ],
                     lookup_key="Client_ID",
                 ),
                 FeatureFunction(
                     udf_name=self.function_name,
                     output_name="cancelled_rate",
-                    input_bindings={"canceled": "no_of_previous_cancellations", "not_canceled": "no_of_previous_bookings_not_canceled"},
+                    input_bindings={
+                        "canceled": "no_of_previous_cancellations",
+                        "not_canceled": "no_of_previous_bookings_not_canceled",
+                    },
                 ),
             ],
             exclude_columns=["update_timestamp_utc"],
@@ -131,14 +141,20 @@ class FeatureLookUpModel:
 
         self.training_df = self.training_set.load_df().toPandas()
         self.test_set["cancelled_rate"] = self.test_set.apply(
-            lambda row: -1 if (row["no_of_previous_cancellations"] + row["no_of_previous_bookings_not_canceled"]) == 0
-            else row["no_of_previous_cancellations"] / (row["no_of_previous_cancellations"] + row["no_of_previous_bookings_not_canceled"]),
-            axis=1
+            lambda row: -1
+            if (row["no_of_previous_cancellations"] + row["no_of_previous_bookings_not_canceled"]) == 0
+            else row["no_of_previous_cancellations"]
+            / (row["no_of_previous_cancellations"] + row["no_of_previous_bookings_not_canceled"]),
+            axis=1,
         )
 
-        self.X_train = self.training_df[self.num_features + self.cat_features + self.date_features + ["cancelled_rate", "Client_ID", "Booking_ID"]]
+        self.X_train = self.training_df[
+            self.num_features + self.cat_features + self.date_features + ["cancelled_rate", "Client_ID", "Booking_ID"]
+        ]
         self.y_train = self.training_df[self.target].map({"Not_Canceled": 0, "Canceled": 1})
-        self.X_test = self.test_set[self.num_features + self.cat_features + self.date_features + ["cancelled_rate", "Client_ID", "Booking_ID"]]
+        self.X_test = self.test_set[
+            self.num_features + self.cat_features + self.date_features + ["cancelled_rate", "Client_ID", "Booking_ID"]
+        ]
         self.y_test = self.test_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
 
         logger.info("✅ Feature engineering completed.")
@@ -173,7 +189,7 @@ class FeatureLookUpModel:
             pipeline.fit(self.X_train, self.y_train)
             y_pred = pipeline.predict(self.X_test)
 
-           # Evaluate metrics
+            # Evaluate metrics
             accuracy = accuracy_score(self.y_test, y_pred)
             precision = precision_score(self.y_test, y_pred)
             recall = recall_score(self.y_test, y_pred)

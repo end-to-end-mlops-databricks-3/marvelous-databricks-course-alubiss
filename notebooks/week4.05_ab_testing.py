@@ -1,29 +1,21 @@
 # Databricks notebook source
 import hashlib
-
-import mlflow
-from databricks.sdk import WorkspaceClient
-from databricks.sdk.service.serving import (
-    EndpointCoreConfigInput,
-    ServedEntityInput,
-)
-from mlflow.models import infer_signature
-from pyspark.sql import SparkSession
-
 import os
 import sys
-from typing import Literal
+
+import mlflow
+from pyspark.sql import SparkSession
 
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../src")))
-from hotel_reservations.models.modeling_pipeline import PocessModeling
-from hotel_reservations.config import ProjectConfig, Tags
-from hotel_reservations.utils import serving_pred_function
-from dotenv import load_dotenv
 import os
-import requests
-import time
+
+from dotenv import load_dotenv
+
+from hotel_reservations.config import ProjectConfig, Tags
+from hotel_reservations.models.modeling_pipeline import PocessModeling
 
 # COMMAND ----------
+
 
 def is_databricks() -> bool:
     """Check if the code is running in a Databricks environment.
@@ -31,6 +23,7 @@ def is_databricks() -> bool:
     :return: True if running in Databricks, False otherwise.
     """
     return "DATABRICKS_RUNTIME_VERSION" in os.environ
+
 
 # COMMAND ----------
 
@@ -55,7 +48,8 @@ schema_name = config.schema_name
 # COMMAND ----------
 
 # train model A
-basic_model = PocessModeling(config=config, tags=tags, spark=spark, code_paths=["../src/hotel_reservations/models/modeling_pipeline.py"]
+basic_model = PocessModeling(
+    config=config, tags=tags, spark=spark, code_paths=["../src/hotel_reservations/models/modeling_pipeline.py"]
 )
 basic_model.model_name = "model_basic_A"
 basic_model.load_data()
@@ -68,12 +62,11 @@ model_A_uri = f"models:/mlops_dev.olalubic.{basic_model.model_name}@latest-model
 # COMMAND ----------
 
 # train model B
-basic_model_b = PocessModeling(config=config, tags=tags, spark=spark, code_paths=["../src/hotel_reservations/models/modeling_pipeline.py"]
+basic_model_b = PocessModeling(
+    config=config, tags=tags, spark=spark, code_paths=["../src/hotel_reservations/models/modeling_pipeline.py"]
 )
-basic_model_b.paramaters = {"learning_rate": 0.01,
-                            "n_estimators": 1000,
-                            "max_depth": 6}
-basic_model_b.model_name = f"model_basic_B"
+basic_model_b.paramaters = {"learning_rate": 0.01, "n_estimators": 1000, "max_depth": 6}
+basic_model_b.model_name = "model_basic_B"
 basic_model_b.load_data()
 basic_model_b.prepare_features()
 basic_model_b.train()
@@ -85,15 +78,12 @@ model_B_uri = f"models:/mlops_dev.olalubic.{basic_model_b.model_name}@latest-mod
 
 import pandas as pd
 
+
 # define wrapper
 class ModelWrapper(mlflow.pyfunc.PythonModel):
     def load_context(self, context):
-        self.model_a = mlflow.pyfunc.load_model(
-            context.artifacts["pyfunc-alubiss-model_basic_A"]
-        )
-        self.model_b = mlflow.pyfunc.load_model(
-            context.artifacts["pyfunc-alubiss-model_basic_B"]
-        )
+        self.model_a = mlflow.pyfunc.load_model(context.artifacts["pyfunc-alubiss-model_basic_A"])
+        self.model_b = mlflow.pyfunc.load_model(context.artifacts["pyfunc-alubiss-model_basic_B"])
 
     def predict(self, context, model_input):
         house_id = str(model_input["Client_ID"].values[0])
@@ -105,6 +95,7 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         else:
             predictions = self.model_b.predict(model_input)
             return {"Prediction": predictions, "model": "Model B"}
+
 
 # COMMAND ----------
 
@@ -133,17 +124,9 @@ X_test = test_set
 
 # COMMAND ----------
 
-from mlflow.data.dataset_source import DatasetSource
 from mlflow.models.signature import ModelSignature
 from mlflow.types import ColSpec, Schema
-from mlflow.utils.environment import _mlflow_conda_env
 from pyspark.sql import SparkSession
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.compose import ColumnTransformer
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-from sklearn.model_selection import StratifiedKFold
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder
 
 mlflow.set_experiment(experiment_name="/Shared/model-ab-testing")
 model_name = f"{catalog_name}.{schema_name}.model_pyfunc_ab_test"
@@ -152,27 +135,27 @@ wrapped_model = ModelWrapper()
 with mlflow.start_run() as run:
     run_id = run.info.run_id
     input_signature = Schema(
-            [
-                ColSpec("integer", "required_car_parking_space"),
-                ColSpec("integer", "no_of_adults"),
-                ColSpec("integer", "no_of_children"),
-                ColSpec("integer", "no_of_weekend_nights"),
-                ColSpec("integer", "no_of_week_nights"),
-                ColSpec("integer", "lead_time"),
-                ColSpec("integer", "repeated_guest"),
-                ColSpec("integer", "no_of_previous_cancellations"),
-                ColSpec("integer", "no_of_previous_bookings_not_canceled"),
-                ColSpec("float", "avg_price_per_room"),
-                ColSpec("integer", "no_of_special_requests"),
-                ColSpec("string", "type_of_meal_plan"),
-                ColSpec("string", "room_type_reserved"),
-                ColSpec("string", "market_segment_type"),
-                ColSpec("string", "country"),
-                ColSpec("integer", "arrival_month"),
-                ColSpec("string", "Client_ID"),
-                ColSpec("string", "Booking_ID"),
-            ]
-        )
+        [
+            ColSpec("integer", "required_car_parking_space"),
+            ColSpec("integer", "no_of_adults"),
+            ColSpec("integer", "no_of_children"),
+            ColSpec("integer", "no_of_weekend_nights"),
+            ColSpec("integer", "no_of_week_nights"),
+            ColSpec("integer", "lead_time"),
+            ColSpec("integer", "repeated_guest"),
+            ColSpec("integer", "no_of_previous_cancellations"),
+            ColSpec("integer", "no_of_previous_bookings_not_canceled"),
+            ColSpec("float", "avg_price_per_room"),
+            ColSpec("integer", "no_of_special_requests"),
+            ColSpec("string", "type_of_meal_plan"),
+            ColSpec("string", "room_type_reserved"),
+            ColSpec("string", "market_segment_type"),
+            ColSpec("string", "country"),
+            ColSpec("integer", "arrival_month"),
+            ColSpec("string", "Client_ID"),
+            ColSpec("string", "Booking_ID"),
+        ]
+    )
 
     output_signature = Schema(
         [
@@ -190,9 +173,10 @@ with mlflow.start_run() as run:
         artifacts={
             "pyfunc-alubiss-model_basic_A": model_A_uri,
             "pyfunc-alubiss-model_basic_B": model_B_uri,
-            "banned_client_list": basic_model_b.banned_client_path},
+            "banned_client_list": basic_model_b.banned_client_path,
+        },
         code_paths=basic_model_b.code_paths,
-        signature=signature
+        signature=signature,
     )
 model_version = mlflow.register_model(
     model_uri=f"runs:/{run_id}/pyfunc-alubiss-model-ab", name=model_name, tags=tags.dict()
@@ -212,7 +196,6 @@ client.set_registered_model_alias(
 
 # COMMAND ----------
 
-import pandas as pd
 import mlflow
 
 columns = [
@@ -233,46 +216,11 @@ columns = [
     "no_of_special_requests",
     "arrival_month",
     "Booking_ID",
-    "Client_ID"
-  ]
-data =[[
-      "Meal Plan 1",
-      0,
-      "Room_Type 1",
-      "Online",
-      "PL",
-      2,
-      1,
-      2,
-      1,
-      26,
-      0,
-      0,
-      0,
-      161,
-      0,
-      10,
-      "INN25630",
-      "ABCDE"],
-      [
-      "Meal Plan 1",
-      0,
-      "Room_Type 1",
-      "Online",
-      "PL",
-      2,
-      1,
-      2,
-      1,
-      26,
-      0,
-      0,
-      0,
-      161,
-      0,
-      10,
-      "INN25630",
-      "1sw2221"]
+    "Client_ID",
+]
+data = [
+    ["Meal Plan 1", 0, "Room_Type 1", "Online", "PL", 2, 1, 2, 1, 26, 0, 0, 0, 161, 0, 10, "INN25630", "ABCDE"],
+    ["Meal Plan 1", 0, "Room_Type 1", "Online", "PL", 2, 1, 2, 1, 26, 0, 0, 0, 161, 0, 10, "INN25630", "1sw2221"],
 ]
 
 df = pd.DataFrame(data, columns=columns)
@@ -289,14 +237,13 @@ cols_types = {
     "no_of_previous_bookings_not_canceled": "int32",
     "avg_price_per_room": "float32",
     "no_of_special_requests": "int32",
-    "arrival_month": "int32"
+    "arrival_month": "int32",
 }
 
 df = df.astype(cols_types)
 
 # COMMAND ----------
 
-import hotel_reservations
 
 model_uri = f"models:/{model_name}@latest-ab-model"
 model = mlflow.pyfunc.load_model(model_uri)
@@ -305,34 +252,13 @@ predictions
 
 # COMMAND ----------
 
-data2 =[
-      [
-      "Meal Plan 1",
-      0,
-      "Room_Type 1",
-      "Online",
-      "PL",
-      2,
-      1,
-      2,
-      1,
-      26,
-      0,
-      0,
-      0,
-      161,
-      0,
-      10,
-      "INN25630",
-      "4"]
-]
+data2 = [["Meal Plan 1", 0, "Room_Type 1", "Online", "PL", 2, 1, 2, 1, 26, 0, 0, 0, 161, 0, 10, "INN25630", "4"]]
 
 df2 = pd.DataFrame(data2, columns=columns)
 df2 = df2.astype(cols_types)
 
 # COMMAND ----------
 
-import hotel_reservations
 
 model_uri = f"models:/{model_name}@latest-ab-model"
 model = mlflow.pyfunc.load_model(model_uri)
@@ -340,5 +266,3 @@ predictions = model.predict(df2)
 predictions
 
 # COMMAND ----------
-
-

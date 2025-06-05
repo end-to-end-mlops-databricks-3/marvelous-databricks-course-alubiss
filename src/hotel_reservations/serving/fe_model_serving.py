@@ -1,5 +1,7 @@
 """FeaturLookUp Serving module."""
 
+import os
+import sys
 import time
 
 import mlflow
@@ -11,12 +13,7 @@ from databricks.sdk.service.catalog import (
 from databricks.sdk.service.serving import EndpointCoreConfigInput, ServedEntityInput
 from loguru import logger
 
-import os
-import sys
-from typing import Literal
-
-#sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../src")))
-
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../src")))
 from hotel_reservations.config import ProjectConfig
 
 

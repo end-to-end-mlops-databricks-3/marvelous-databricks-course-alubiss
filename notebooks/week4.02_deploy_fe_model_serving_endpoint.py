@@ -1,12 +1,10 @@
 # Databricks notebook source
 import os
 import sys
-from typing import Literal
 
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../src")))
 
 import time
-from typing import Dict, List
 
 import requests
 from loguru import logger
@@ -69,7 +67,7 @@ required_columns = [
     "no_of_special_requests",
     "arrival_month",
     "Booking_ID",
-    "Client_ID"
+    "Client_ID",
 ]
 
 spark = SparkSession.builder.getOrCreate()
@@ -83,11 +81,10 @@ logger.info(dataframe_records[0])
 
 # COMMAND ----------
 
+
 # Call the endpoint with one sample record
 def call_endpoint(record):
-    """
-    Calls the model serving endpoint with a given input record.
-    """
+    """Calls the model serving endpoint with a given input record."""
     serving_endpoint = f"https://{os.environ['DBR_HOST']}/serving-endpoints/{endpoint_name}/invocations"
 
     response = requests.post(

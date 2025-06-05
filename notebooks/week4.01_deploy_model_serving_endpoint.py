@@ -1,12 +1,10 @@
 # Databricks notebook source
 import os
 import sys
-from typing import Literal
 
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../src")))
 
 import time
-from typing import Dict, List
 
 import requests
 from pyspark.dbutils import DBUtils
@@ -33,7 +31,8 @@ schema_name = config.schema_name
 
 # Initialize feature store manager
 model_serving = ModelServing(
-    model_name=f"{catalog_name}.{schema_name}.hotel_reservations_model_custom", endpoint_name="alubiss-custom-hotel-reservations-model-serving"
+    model_name=f"{catalog_name}.{schema_name}.hotel_reservations_model_custom",
+    endpoint_name="alubiss-custom-hotel-reservations-model-serving",
 )
 
 # COMMAND ----------
@@ -64,46 +63,11 @@ columns = [
     "no_of_special_requests",
     "arrival_month",
     "Booking_ID",
-    "Client_ID"
-  ]
-data =[[
-      "Meal Plan 1",
-      0,
-      "Room_Type 1",
-      "Online",
-      "PL",
-      2,
-      1,
-      2,
-      1,
-      26,
-      0,
-      0,
-      0,
-      161,
-      0,
-      10,
-      "INN25630",
-      "ABCDE"],
-      [
-      "Meal Plan 1",
-      0,
-      "Room_Type 1",
-      "Online",
-      "PL",
-      2,
-      1,
-      2,
-      1,
-      26,
-      0,
-      0,
-      0,
-      161,
-      0,
-      10,
-      "INN25630",
-      "1sw2221"]
+    "Client_ID",
+]
+data = [
+    ["Meal Plan 1", 0, "Room_Type 1", "Online", "PL", 2, 1, 2, 1, 26, 0, 0, 0, 161, 0, 10, "INN25630", "ABCDE"],
+    ["Meal Plan 1", 0, "Room_Type 1", "Online", "PL", 2, 1, 2, 1, 26, 0, 0, 0, 161, 0, 10, "INN25630", "1sw2221"],
 ]
 
 df = pd.DataFrame(data, columns=columns)
@@ -120,7 +84,7 @@ cols_types = {
     "no_of_previous_bookings_not_canceled": "int32",
     "avg_price_per_room": "float32",
     "no_of_special_requests": "int32",
-    "arrival_month": "int32"
+    "arrival_month": "int32",
 }
 
 df = df.astype(cols_types)
@@ -151,10 +115,9 @@ Each dataframe record in the request body should be list of json with columns lo
   'SaleCondition': 'Normal'}]
 """
 
+
 def call_endpoint(record):
-    """
-    Calls the model serving endpoint with a given input record.
-    """
+    """Calls the model serving endpoint with a given input record."""
     serving_endpoint = f"https://{os.environ['DBR_HOST']}/serving-endpoints/alubiss-custom-hotel-reservations-model-serving/invocations"
 
     response = requests.post(

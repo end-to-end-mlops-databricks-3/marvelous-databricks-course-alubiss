@@ -43,7 +43,13 @@ class FeatureServing:
             FeatureLookup(
                 table_name=self.feature_table_name,
                 lookup_key="Client_ID",
-                feature_names=["repeated_guest", "no_of_previous_cancellations", "no_of_previous_bookings_not_canceled", "avg_price_per_room", "no_of_special_requests"],
+                feature_names=[
+                    "repeated_guest",
+                    "no_of_previous_cancellations",
+                    "no_of_previous_bookings_not_canceled",
+                    "avg_price_per_room",
+                    "no_of_special_requests",
+                ],
             )
         ]
         self.fe.create_feature_spec(name=self.feature_spec_name, features=features, exclude_columns=None)

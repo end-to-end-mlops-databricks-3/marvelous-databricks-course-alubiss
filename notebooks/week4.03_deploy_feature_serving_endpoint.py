@@ -1,13 +1,11 @@
 # Databricks notebook source
 import os
 import sys
-from typing import Literal
 
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../src")))
 import time
 
 import mlflow
-import pandas as pd
 import requests
 from databricks import feature_engineering
 from pyspark.dbutils import DBUtils
@@ -43,14 +41,13 @@ endpoint_name = "alubiss-hotel-reservations-feature-serving"
 
 # COMMAND ----------
 
-from pyspark.sql.functions import col
+import os
+import sys
+
 import mlflow
 from loguru import logger
 from pyspark.sql import SparkSession
-
-import os
-import sys
-from typing import Literal
+from pyspark.sql.functions import col
 
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../src")))
 
@@ -63,8 +60,15 @@ tags = Tags(**tags_dict)
 
 config = ProjectConfig.from_yaml(config_path="../project_config.yml")
 
-test_set = spark.table(f"mlops_dev.olalubic.test_set").limit(10)
-X_test = test_set.drop("repeated_guest", "no_of_previous_cancellations", "no_of_previous_bookings_not_canceled", "avg_price_per_room", "no_of_special_requests", "booking_status")
+test_set = spark.table("mlops_dev.olalubic.test_set").limit(10)
+X_test = test_set.drop(
+    "repeated_guest",
+    "no_of_previous_cancellations",
+    "no_of_previous_bookings_not_canceled",
+    "avg_price_per_room",
+    "no_of_special_requests",
+    "booking_status",
+)
 X_test = X_test.withColumn("Client_ID", col("Client_ID").cast("string"))
 X_test = X_test.filter(X_test.Client_ID.isin(["27633", "95890"]))
 fe_model = FeatureLookUpModel(config=config, tags=tags, spark=spark)
@@ -75,12 +79,25 @@ logger.info(predictions)
 
 # 27633 90
 # 95890 48
-preds_df = predictions[["Client_ID", "repeated_guest", "no_of_previous_cancellations", "no_of_previous_bookings_not_canceled", "avg_price_per_room", "no_of_special_requests", "prediction"]]
+preds_df = predictions[
+    [
+        "Client_ID",
+        "repeated_guest",
+        "no_of_previous_cancellations",
+        "no_of_previous_bookings_not_canceled",
+        "avg_price_per_room",
+        "no_of_special_requests",
+        "prediction",
+    ]
+]
 
 # COMMAND ----------
 
 fe.create_table(
-    name=feature_table_name, primary_keys=["Client_ID"], df=preds_df, description="Hotel Reservation predictions feature table"
+    name=feature_table_name,
+    primary_keys=["Client_ID"],
+    df=preds_df,
+    description="Hotel Reservation predictions feature table",
 )
 
 spark.sql(f"""
@@ -139,5 +156,3 @@ response = requests.post(
 response.text
 
 # COMMAND ----------
-
-

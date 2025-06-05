@@ -11,7 +11,7 @@ from loguru import logger
 BASE_URL = "http://127.0.0.1:5088"
 
 test_data = {
-   "type_of_meal_plan": "Meal Plan 1",
+    "type_of_meal_plan": "Meal Plan 1",
     "required_car_parking_space": 0,
     "room_type_reserved": "Room_Type 1",
     "market_segment_type": "Online",
@@ -21,14 +21,14 @@ test_data = {
     "no_of_weekend_nights": 2,
     "no_of_week_nights": 1,
     "lead_time": 26,
-    "repeated_guest": 0, 
+    "repeated_guest": 0,
     "no_of_previous_cancellations": 0,
     "no_of_previous_bookings_not_canceled": 0,
     "avg_price_per_room": 161,
     "no_of_special_requests": 0,
     "arrival_month": 10,
     "Booking_ID": "INN25630",
-    "Client_ID": "ABCDE"
+    "Client_ID": "ABCDE",
 }
 pandas_df = pd.DataFrame([test_data])
 
