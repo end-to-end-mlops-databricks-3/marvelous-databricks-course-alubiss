@@ -100,45 +100,11 @@ class ModelWrapper(mlflow.pyfunc.PythonModel):
         hashed_id = hashlib.md5(house_id.encode(encoding="UTF-8")).hexdigest()
         # convert a hexadecimal (base-16) string into an integer
         if int(hashed_id, 16) % 2:
-            banned_client_list = pd.read_csv(context.artifacts["banned_client_list"], sep=";")
-            client_ids = model_input["Client_ID"].values
-
-            predictions = self.model_a.predict_proba(model_input)
-            proba_canceled = predictions[:, 1]
-
-            adjusted_predictions = serving_pred_function(client_ids, banned_client_list, proba_canceled)
-
-            comment = [
-                "Banned" if client_id in banned_client_list["banned_clients_ids"].values else "None"
-                for client_id in client_ids
-            ]
-            return pd.DataFrame(
-                {
-                    "Client_ID": client_ids,
-                    "Proba": adjusted_predictions,
-                    "Comment": comment,
-                }
-            )
+            predictions = self.model_a.predict(model_input)
+            return {"Prediction": predictions, "model": "Model A"}
         else:
-            banned_client_list = pd.read_csv(context.artifacts["banned_client_list"], sep=";")
-            client_ids = model_input["Client_ID"].values
-
-            predictions = self.model_b.predict_proba(model_input)
-            proba_canceled = predictions[:, 1]
-
-            adjusted_predictions = serving_pred_function(client_ids, banned_client_list, proba_canceled)
-
-            comment = [
-                "Banned" if client_id in banned_client_list["banned_clients_ids"].values else "None"
-                for client_id in client_ids
-            ]
-            return pd.DataFrame(
-                {
-                    "Client_ID": client_ids,
-                    "Proba": adjusted_predictions,
-                    "Comment": comment,
-                }
-            )
+            predictions = self.model_b.predict(model_input)
+            return {"Prediction": predictions, "model": "Model B"}
 
 # COMMAND ----------
 
@@ -335,6 +301,42 @@ import hotel_reservations
 model_uri = f"models:/{model_name}@latest-ab-model"
 model = mlflow.pyfunc.load_model(model_uri)
 predictions = model.predict(df)
+predictions
+
+# COMMAND ----------
+
+data2 =[
+      [
+      "Meal Plan 1",
+      0,
+      "Room_Type 1",
+      "Online",
+      "PL",
+      2,
+      1,
+      2,
+      1,
+      26,
+      0,
+      0,
+      0,
+      161,
+      0,
+      10,
+      "INN25630",
+      "4"]
+]
+
+df2 = pd.DataFrame(data2, columns=columns)
+df2 = df2.astype(cols_types)
+
+# COMMAND ----------
+
+import hotel_reservations
+
+model_uri = f"models:/{model_name}@latest-ab-model"
+model = mlflow.pyfunc.load_model(model_uri)
+predictions = model.predict(df2)
 predictions
 
 # COMMAND ----------
