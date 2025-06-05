@@ -11,7 +11,13 @@ from databricks.sdk.service.catalog import (
 from databricks.sdk.service.serving import EndpointCoreConfigInput, ServedEntityInput
 from loguru import logger
 
-from house_price.config import ProjectConfig
+import os
+import sys
+from typing import Literal
+
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../src")))
+
+from hotel_reservations.config import ProjectConfig
 
 
 class FeatureLookupServing:
@@ -33,7 +39,7 @@ class FeatureLookupServing:
     def create_online_table(self) -> None:
         """Create an online table for house features."""
         spec = OnlineTableSpec(
-            primary_key_columns=["Id"],
+            primary_key_columns=["Client_ID"],
             source_table_full_name=self.feature_table_name,
             run_triggered=OnlineTableSpecTriggeredSchedulingPolicy.from_dict({"triggered": "true"}),
             perform_full_copy=False,
