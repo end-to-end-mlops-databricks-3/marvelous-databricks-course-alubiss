@@ -53,6 +53,9 @@ version = { file = "version.txt" }
 [tool.pytest.ini_options]
 testpaths = [ "tests" ]
 pythonpath = [ "." ]
+markers = [
+    "ci_exclude: Tests excluded from CI/CD pipeline"
+]
 
 # [lint.pydocstyle]
 # convention = "sphinx"

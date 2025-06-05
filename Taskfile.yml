@@ -71,7 +71,7 @@ tasks:
       - rm -rf "test-{{.PACKAGE_IMPORT_NAME}}" && mkdir -p "test-{{.PACKAGE_IMPORT_NAME}}/my_model"
       # Navigate to the directory where mlruns exists and download the model into 'test-house_price'
       # Reminder note -> "models:/{catalog_name}.{schema_name}.model_name" is the full model name. Please update it accordingly.
-      - cd tests && uv run mlflow artifacts download --artifact-uri "models:/mlops_dev.house_prices.house_prices_model_custom@latest-model" --dst-path "../test-{{.PACKAGE_IMPORT_NAME}}/my_model"
+      - cd tests && uv run mlflow artifacts download --artifact-uri "models:/mlops_dev.olalubic.mlops_dev.olalubic.hotel_reservations_model_custom@latest-model" --dst-path "../test-{{.PACKAGE_IMPORT_NAME}}/my_model"
       - cd ..
       # Serve model with mlflow locally
       - cd "test-{{.PACKAGE_IMPORT_NAME}}" && uv run mlflow models serve -m my_model --port 5088
