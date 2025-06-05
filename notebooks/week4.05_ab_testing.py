@@ -1,12 +1,4 @@
 # Databricks notebook source
-# MAGIC %pip install house_price-1.0.1-py3-none-any.whl
-
-# COMMAND ----------
-
-# MAGIC %restart_python
-
-# COMMAND ----------
-
 import hashlib
 
 import mlflow
@@ -18,13 +10,27 @@ from databricks.sdk.service.serving import (
 from mlflow.models import infer_signature
 from pyspark.sql import SparkSession
 
-from house_price.config import ProjectConfig, Tags
-from house_price.models.basic_model import BasicModel
-from marvelous.common import is_databricks
+import os
+import sys
+from typing import Literal
+
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../src")))
+from hotel_reservations.models.modeling_pipeline import PocessModeling
+from hotel_reservations.config import ProjectConfig, Tags
+from hotel_reservations.utils import serving_pred_function
 from dotenv import load_dotenv
 import os
 import requests
 import time
+
+# COMMAND ----------
+
+def is_databricks() -> bool:
+    """Check if the code is running in a Databricks environment.
+
+    :return: True if running in Databricks, False otherwise.
+    """
+    return "DATABRICKS_RUNTIME_VERSION" in os.environ
 
 # COMMAND ----------
 
@@ -37,157 +43,198 @@ if not is_databricks():
 
 config = ProjectConfig.from_yaml(config_path="../project_config.yml", env="prd")
 spark = SparkSession.builder.getOrCreate()
-tags = Tags(**{"git_sha": "abcd12345", "branch": "week4"})
+tags = Tags(**{"git_sha": "abcd12345", "branch": "week4", "job_run_id": "1234"})
 
 # COMMAND ----------
+
 # Load project config
 config = ProjectConfig.from_yaml(config_path="../project_config.yml", env="dev")
 catalog_name = config.catalog_name
 schema_name = config.schema_name
 
 # COMMAND ----------
+
 # train model A
-basic_model = BasicModel(config=config, tags=tags, spark=spark)
+basic_model = PocessModeling(config=config, tags=tags, spark=spark, code_paths=["../src/hotel_reservations/models/modeling_pipeline.py"]
+)
+basic_model.model_name = "model_basic_A"
 basic_model.load_data()
 basic_model.prepare_features()
 basic_model.train()
 basic_model.log_model()
 basic_model.register_model()
-model_A_uri = f"models:/{basic_model.model_name}@latest-model"
+model_A_uri = f"models:/mlops_dev.olalubic.{basic_model.model_name}@latest-model"
 
 # COMMAND ----------
+
 # train model B
-basic_model_b = BasicModel(config=config, tags=tags, spark=spark)
+basic_model_b = PocessModeling(config=config, tags=tags, spark=spark, code_paths=["../src/hotel_reservations/models/modeling_pipeline.py"]
+)
 basic_model_b.paramaters = {"learning_rate": 0.01,
                             "n_estimators": 1000,
                             "max_depth": 6}
-basic_model_b.model_name = f"{catalog_name}.{schema_name}.house_prices_model_basic_B"
+basic_model_b.model_name = f"model_basic_B"
 basic_model_b.load_data()
 basic_model_b.prepare_features()
 basic_model_b.train()
 basic_model_b.log_model()
 basic_model_b.register_model()
-model_B_uri = f"models:/{basic_model_b.model_name}@latest-model"
+model_B_uri = f"models:/mlops_dev.olalubic.{basic_model_b.model_name}@latest-model"
 
 # COMMAND ----------
+
+import pandas as pd
+from loguru import logger
+
 # define wrapper
-class HousePriceModelWrapper(mlflow.pyfunc.PythonModel):
+class ModelWrapper(mlflow.pyfunc.PythonModel):
     def load_context(self, context):
         self.model_a = mlflow.sklearn.load_model(
-            context.artifacts["lightgbm-pipeline-model-A"]
+            context.artifacts["pyfunc-alubiss-model_basic_A"]
         )
         self.model_b = mlflow.sklearn.load_model(
-            context.artifacts["lightgbm-pipeline-model-B"]
+            context.artifacts["pyfunc-alubiss-model_basic_B"]
         )
 
     def predict(self, context, model_input):
-        house_id = str(model_input["Id"].values[0])
+        house_id = str(model_input["Client_ID"].values[0])
         hashed_id = hashlib.md5(house_id.encode(encoding="UTF-8")).hexdigest()
         # convert a hexadecimal (base-16) string into an integer
         if int(hashed_id, 16) % 2:
-            predictions = self.model_a.predict(model_input.drop(["Id"], axis=1))
-            return {"Prediction": predictions[0], "model": "Model A"}
+            banned_client_list = pd.read_csv(context.artifacts["banned_client_list"], sep=";")
+            client_ids = model_input["Client_ID"].values
+
+            predictions = self.model_a.predict_proba(model_input)
+            proba_canceled = predictions[:, 1]
+
+            adjusted_predictions = serving_pred_function(client_ids, banned_client_list, proba_canceled)
+
+            comment = [
+                "Banned" if client_id in banned_client_list["banned_clients_ids"].values else "None"
+                for client_id in client_ids
+            ]
+            logger.info("MODEL A")
+            return pd.DataFrame(
+                {
+                    "Client_ID": client_ids,
+                    "Proba": adjusted_predictions,
+                    "Comment": comment,
+                }
+            )
         else:
-            predictions = self.model_b.predict(model_input.drop(["Id"], axis=1))
-            return {"Prediction": predictions[0], "model": "Model B"}
+            banned_client_list = pd.read_csv(context.artifacts["banned_client_list"], sep=";")
+            client_ids = model_input["Client_ID"].values
+
+            predictions = self.model_b.predict_proba(model_input)
+            proba_canceled = predictions[:, 1]
+
+            adjusted_predictions = serving_pred_function(client_ids, banned_client_list, proba_canceled)
+
+            comment = [
+                "Banned" if client_id in banned_client_list["banned_clients_ids"].values else "None"
+                for client_id in client_ids
+            ]
+            logger.info("MODEL B")
+            return pd.DataFrame(
+                {
+                    "Client_ID": client_ids,
+                    "Proba": adjusted_predictions,
+                    "Comment": comment,
+                }
+            )
 
 # COMMAND ----------
-train_set_spark = spark.table(f"{catalog_name}.{schema_name}.train_set")
-train_set = train_set_spark.toPandas()
-test_set = spark.table(f"{catalog_name}.{schema_name}.test_set").toPandas()
-X_train = train_set[config.num_features + config.cat_features + ["Id"]]
-X_test = test_set[config.num_features + config.cat_features + ["Id"]]
+
+train_set_spark = spark.table(f"{basic_model_b.catalog_name}.{basic_model_b.schema_name}.train_set")
+train_set = train_set_spark.toPandas().drop(columns=["update_timestamp_utc"], errors="ignore")
+test_set = (
+    spark.table(f"{basic_model_b.catalog_name}.{basic_model_b.schema_name}.test_set")
+    .toPandas()
+    .drop(columns=["update_timestamp_utc"], errors="ignore")
+)
+data_version = "0"  # describe history -> retrieve
+
+X_train = train_set[
+    basic_model_b.num_features + basic_model_b.cat_features + basic_model_b.date_features + ["Client_ID", "Booking_ID"]
+]
+y_train = train_set[basic_model_b.target].map({"Not_Canceled": 0, "Canceled": 1})
+X_test = test_set[
+    basic_model_b.num_features + basic_model_b.cat_features + basic_model_b.date_features + ["Client_ID", "Booking_ID"]
+]
+y_test = test_set[basic_model_b.target].map({"Not_Canceled": 0, "Canceled": 1})
+train_set = train_set.drop(columns=[basic_model_b.target])
+test_set = test_set.drop(columns=[basic_model_b.target])
+
+X_train = train_set
+X_test = test_set
 
 # COMMAND ----------
-mlflow.set_experiment(experiment_name="/Shared/house-prices-ab-testing")
-model_name = f"{catalog_name}.{schema_name}.house_prices_model_pyfunc_ab_test"
-wrapped_model = HousePriceModelWrapper()
+
+from mlflow.data.dataset_source import DatasetSource
+from mlflow.models.signature import ModelSignature
+from mlflow.types import ColSpec, Schema
+from mlflow.utils.environment import _mlflow_conda_env
+from pyspark.sql import SparkSession
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.compose import ColumnTransformer
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from sklearn.model_selection import StratifiedKFold
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
+
+mlflow.set_experiment(experiment_name="/Shared/model-ab-testing")
+model_name = f"{catalog_name}.{schema_name}.alubiss_model_pyfunc_ab_test"
+wrapped_model = ModelWrapper()
 
 with mlflow.start_run() as run:
     run_id = run.info.run_id
-    signature = infer_signature(model_input=X_train, model_output={"Prediction": 1234.5, "model": "Model B"})
-    dataset = mlflow.data.from_spark(train_set_spark, table_name=f"{catalog_name}.{schema_name}.train_set", version="0")
-    mlflow.log_input(dataset, context="training")
+    input_signature = Schema(
+            [
+                ColSpec("integer", "required_car_parking_space"),
+                ColSpec("integer", "no_of_adults"),
+                ColSpec("integer", "no_of_children"),
+                ColSpec("integer", "no_of_weekend_nights"),
+                ColSpec("integer", "no_of_week_nights"),
+                ColSpec("integer", "lead_time"),
+                ColSpec("integer", "repeated_guest"),
+                ColSpec("integer", "no_of_previous_cancellations"),
+                ColSpec("integer", "no_of_previous_bookings_not_canceled"),
+                ColSpec("float", "avg_price_per_room"),
+                ColSpec("integer", "no_of_special_requests"),
+                ColSpec("string", "type_of_meal_plan"),
+                ColSpec("string", "room_type_reserved"),
+                ColSpec("string", "market_segment_type"),
+                ColSpec("string", "country"),
+                ColSpec("integer", "arrival_month"),
+                ColSpec("string", "Client_ID"),
+                ColSpec("string", "Booking_ID"),
+            ]
+        )
+
+    output_signature = Schema(
+        [
+            ColSpec("string", "Client_ID"),
+            ColSpec("double", "Proba"),
+            ColSpec("string", "Comment"),
+        ]
+    )
+
+    signature = ModelSignature(inputs=input_signature, outputs=output_signature)
+
     mlflow.pyfunc.log_model(
         python_model=wrapped_model,
-        artifact_path="pyfunc-house-price-model-ab",
+        artifact_path="pyfunc-alubiss-model-ab",
         artifacts={
-            "lightgbm-pipeline-model-A": model_A_uri,
-            "lightgbm-pipeline-model-B": model_B_uri},
+            "pyfunc-alubiss-model_basic_A": model_A_uri,
+            "pyfunc-alubiss-model_basic_A": model_B_uri,
+            "banned_client_list": basic_model_b.banned_client_path},
+        code_paths=basic_model_b.code_paths,
         signature=signature
     )
 model_version = mlflow.register_model(
-    model_uri=f"runs:/{run_id}/pyfunc-house-price-model-ab", name=model_name, tags=tags.dict()
+    model_uri=f"runs:/{run_id}/pyfunc-alubiss-model-ab", name=model_name, tags=tags.dict()
 )
 
 # COMMAND ----------
-"""Model serving module."""
-
-workspace = WorkspaceClient()
-model_name=f"{catalog_name}.{schema_name}.house_prices_model_pyfunc_ab_test"
-endpoint_name="house-prices-ab-testing"
-entity_version = model_version.version # registered model version
-
-# get environment variables
-os.environ["DBR_TOKEN"] = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()
-os.environ["DBR_HOST"] = spark.conf.get("spark.databricks.workspaceUrl")
-
-served_entities = [
-    ServedEntityInput(
-        entity_name=model_name,
-        scale_to_zero_enabled=True,
-        workload_size="Small",
-        entity_version=entity_version,
-    )
-]
-
-workspace.serving_endpoints.create(
-        name=endpoint_name,
-        config=EndpointCoreConfigInput(
-            served_entities=served_entities,
-        ),
-    )
-
-# COMMAND ----------
-
-# Create a sample request body
-
-spark = SparkSession.builder.getOrCreate()
-
-train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").toPandas()
-sampled_records = train_set[config.num_features + config.cat_features + ["Id"]].sample(n=1000, replace=True).to_dict(orient="records")
-dataframe_records = [[record] for record in sampled_records]
-
-print(train_set.dtypes)
-print(dataframe_records[0])
-
-# COMMAND ----------
-
-# Call the endpoint with one sample record
-
-def call_endpoint(record):
-    """
-    Calls the model serving endpoint with a given input record.
-    """
-    serving_endpoint = f"https://{os.environ['DBR_HOST']}/serving-endpoints/house-prices-ab-testing/invocations"
-
-    response = requests.post(
-        serving_endpoint,
-        headers={"Authorization": f"Bearer {os.environ['DBR_TOKEN']}"},
-        json={"dataframe_records": record},
-    )
-    return response.status_code, response.text
 
 
-status_code, response_text = call_endpoint(dataframe_records[0])
-print(f"Response Status: {status_code}")
-print(f"Response Text: {response_text}")
-
-# COMMAND ----------
-
-# Load test
-for i in range(len(dataframe_records)):
-    status_code, response_text = call_endpoint(dataframe_records[i])
-    print(f"Response Status: {status_code}")
-    print(f"Response Text: {response_text}")
-    time.sleep(0.2)
