@@ -83,7 +83,7 @@ class FeatureLookUpModel:
         RETURNS FLOAT
         LANGUAGE PYTHON AS
         $$
-        return canceled / (canceled + not_canceled)
+        return -1 if (canceled + not_canceled) == 0 else canceled / (canceled + not_canceled)
         $$
         """)
         logger.info("✅ Feature function defined.")
@@ -101,10 +101,7 @@ class FeatureLookUpModel:
         self.X_test = self.test_set[
             self.num_features + self.cat_features + self.date_features + ["Client_ID", "Booking_ID"]
         ]
-        self.y_test = self.test_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
 
-        self.train_set = self.train_set.withColumn("no_of_previous_cancellations", self.train_set["no_of_previous_cancellations"].cast("int"))
-        self.train_set = self.train_set.withColumn("no_of_previous_bookings_not_canceled", self.train_set["no_of_previous_bookings_not_canceled"].cast("int"))
         self.train_set = self.train_set.withColumn("Client_ID", self.train_set["Client_ID"].cast("string"))
 
         logger.info("✅ Data successfully loaded.")
@@ -133,15 +130,16 @@ class FeatureLookUpModel:
         )
 
         self.training_df = self.training_set.load_df().toPandas()
-        self.training_df = self.training_df[
-            self.num_features + self.cat_features + self.date_features + ["Client_ID", "Booking_ID"]
-        ]
-        self.test_set["cancelled_rate"] = self.test_set["no_of_previous_cancellations"] / (self.test_set["no_of_previous_cancellations"] + self.test_set["no_of_previous_bookings_not_canceled"])
+        self.test_set["cancelled_rate"] = self.test_set.apply(
+            lambda row: -1 if (row["no_of_previous_cancellations"] + row["no_of_previous_bookings_not_canceled"]) == 0
+            else row["no_of_previous_cancellations"] / (row["no_of_previous_cancellations"] + row["no_of_previous_bookings_not_canceled"]),
+            axis=1
+        )
 
-        self.X_train = self.training_df[self.num_features + self.cat_features + self.date_features + ["cancelled_rate"]]
+        self.X_train = self.training_df[self.num_features + self.cat_features + self.date_features + ["cancelled_rate", "Client_ID", "Booking_ID"]]
         self.y_train = self.training_df[self.target].map({"Not_Canceled": 0, "Canceled": 1})
-        self.X_test = self.test_set[self.num_features + self.cat_features + self.date_features + ["cancelled_rate"]]
-        self.y_test = self.test_set[self.target]
+        self.X_test = self.test_set[self.num_features + self.cat_features + self.date_features + ["cancelled_rate", "Client_ID", "Booking_ID"]]
+        self.y_test = self.test_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
 
         logger.info("✅ Feature engineering completed.")
 
