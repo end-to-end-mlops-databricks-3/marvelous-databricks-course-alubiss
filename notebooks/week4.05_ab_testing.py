@@ -88,10 +88,10 @@ import pandas as pd
 # define wrapper
 class ModelWrapper(mlflow.pyfunc.PythonModel):
     def load_context(self, context):
-        self.model_a = mlflow.sklearn.load_model(
+        self.model_a = mlflow.pyfunc.load_model(
             context.artifacts["pyfunc-alubiss-model_basic_A"]
         )
-        self.model_b = mlflow.sklearn.load_model(
+        self.model_b = mlflow.pyfunc.load_model(
             context.artifacts["pyfunc-alubiss-model_basic_B"]
         )
 
@@ -223,7 +223,7 @@ with mlflow.start_run() as run:
         artifact_path="pyfunc-alubiss-model-ab",
         artifacts={
             "pyfunc-alubiss-model_basic_A": model_A_uri,
-            "pyfunc-alubiss-model_basic_A": model_B_uri,
+            "pyfunc-alubiss-model_basic_B": model_B_uri,
             "banned_client_list": basic_model_b.banned_client_path},
         code_paths=basic_model_b.code_paths,
         signature=signature
