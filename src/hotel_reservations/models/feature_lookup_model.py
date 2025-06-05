@@ -6,7 +6,7 @@ import os
 import sys
 from typing import Literal
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../src")))
 
 import mlflow
 from databricks import feature_engineering
