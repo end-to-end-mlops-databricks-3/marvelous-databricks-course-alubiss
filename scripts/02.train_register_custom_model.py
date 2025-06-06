@@ -77,7 +77,7 @@ tags = Tags(**tags_dict)
 
 # Initialize model
 modeling_ppl = PocessModeling(
-    config=config, tags=tags, spark=spark, code_paths=["../src/hotel_reservations/models/modeling_pipeline.py"]
+    config=config, tags=tags, spark=spark, code_paths=["../dist/hotel_reservations-0.1.0-py3-none-any.whl"]
 )
 logger.info("Model initialized.")
 
