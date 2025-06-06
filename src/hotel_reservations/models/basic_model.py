@@ -170,11 +170,7 @@ class BasicModel:
                 version=self.data_version,
             )
             mlflow.log_input(dataset, context="training")
-            mlflow.sklearn.log_model(
-                sk_model=self.pipeline,
-                artifact_path="base-model",
-                signature=signature
-            )
+            mlflow.sklearn.log_model(sk_model=self.pipeline, artifact_path="base-model", signature=signature)
 
     def register_model(self) -> None:
         """Register model in Unity Catalog."""
