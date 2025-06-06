@@ -186,7 +186,7 @@ class BasicModel:
                     "pyspark==3.5.0",
                     "scikit-learn==1.5.2",
                     "scipy==1.14.1",
-                ]
+                ],
             )
 
     def register_model(self) -> None:
