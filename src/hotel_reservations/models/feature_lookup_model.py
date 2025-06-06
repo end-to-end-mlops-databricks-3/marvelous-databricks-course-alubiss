@@ -20,9 +20,25 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
 from hotel_reservations.config import ProjectConfig, Tags
-from hotel_reservations.models.modeling_pipeline import DateFeatureEngineer
 
+class DateFeatureEngineer(BaseEstimator, TransformerMixin):
+    """Date features engineering class."""
 
+    def fit(self, X: pd.DataFrame, y: object = None) -> "DateFeatureEngineer":
+        """Fit method for date feature engineering."""
+        return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Transform method for date feature engineering."""
+        X = X.copy()
+        X["month_sin"] = np.sin(2 * np.pi * X["arrival_month"] / 12)
+        X["month_cos"] = np.cos(2 * np.pi * X["arrival_month"] / 12)
+        X["is_first_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [1, 2, 3] else 0)
+        X["is_second_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [4, 5, 6] else 0)
+        X["is_third_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [7, 8, 9] else 0)
+        X["is_fourth_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [10, 11, 12] else 0)
+        return X
+    
 class FeatureLookUpModel:
     """A class to manage FeatureLookupModel."""
 
