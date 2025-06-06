@@ -20,7 +20,8 @@ dependencies = ["mlflow==2.17.0",
                 "loguru==0.7.3",
                 "pydantic_settings==2.9.1",
                 "hyperopt==0.2.7",
-                "python-dotenv>=1.1.0"
+                "python-dotenv>=1.1.0",
+                "setuptools>=80.7.1",
                 ]
 
 dynamic = ['version']
