@@ -8,7 +8,9 @@ dev:
   catalog_name: mlops_dev
   schema_name: olalubic
 
+experiment_name_basic: /Shared/alubiss-model-basic
 experiment_name_custom: /Shared/alubiss-model-custom
+experiment_name_fe: /Shared/alubiss-model-fe
 
 parameters:
   learning_rate: 0.01
