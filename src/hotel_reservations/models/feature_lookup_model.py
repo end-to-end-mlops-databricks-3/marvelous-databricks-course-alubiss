@@ -2,11 +2,12 @@
 
 import os
 import sys
-import pandas as pd 
 
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../src")))
 
 import mlflow
+import numpy as np
+import pandas as pd
 from databricks import feature_engineering
 from databricks.feature_engineering import FeatureFunction, FeatureLookup
 from databricks.sdk import WorkspaceClient
@@ -22,6 +23,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
 from hotel_reservations.config import ProjectConfig, Tags
+
 
 class DateFeatureEngineer(BaseEstimator, TransformerMixin):
     """Date features engineering class."""
@@ -40,7 +42,8 @@ class DateFeatureEngineer(BaseEstimator, TransformerMixin):
         X["is_third_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [7, 8, 9] else 0)
         X["is_fourth_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [10, 11, 12] else 0)
         return X
-    
+
+
 class FeatureLookUpModel:
     """A class to manage FeatureLookupModel."""
 
