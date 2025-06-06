@@ -173,8 +173,7 @@ class BasicModel:
             mlflow.sklearn.log_model(
                 sk_model=self.pipeline,
                 artifact_path="base-model",
-                signature=signature,
-                conda_env=mlflow.spark.get_default_conda_env(),
+                signature=signature
             )
 
     def register_model(self) -> None:
