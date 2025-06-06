@@ -8,9 +8,9 @@ target → The column to predict.
 parameters → Hyperparameters for LightGBM.
 catalog_name, schema_name → Database schema names for Databricks tables.
 """
+
 import os
 import sys
-from typing import Literal
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 
@@ -49,6 +49,7 @@ class DateFeatureEngineer(BaseEstimator, TransformerMixin):
         X["is_third_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [7, 8, 9] else 0)
         X["is_fourth_quarter"] = X["arrival_month"].apply(lambda x: 1 if x in [10, 11, 12] else 0)
         return X
+
 
 class BasicModel:
     """A basic model class for house price prediction using LightGBM.
@@ -169,9 +170,7 @@ class BasicModel:
                 version=self.data_version,
             )
             mlflow.log_input(dataset, context="training")
-            mlflow.sklearn.log_model(
-                sk_model=self.pipeline, artifact_path="base-model", signature=signature
-            )
+            mlflow.sklearn.log_model(sk_model=self.pipeline, artifact_path="base-model", signature=signature)
 
     def register_model(self) -> None:
         """Register model in Unity Catalog."""
