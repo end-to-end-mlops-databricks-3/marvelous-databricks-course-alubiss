@@ -14,6 +14,7 @@ from loguru import logger
 from mlflow.models import infer_signature
 from mlflow.tracking import MlflowClient
 from pyspark.sql import DataFrame, SparkSession
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.pipeline import Pipeline
