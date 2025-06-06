@@ -174,19 +174,7 @@ class BasicModel:
                 sk_model=self.pipeline,
                 artifact_path="base-model",
                 signature=signature,
-                pip_requirements=[
-                    "mlflow==2.17.0",
-                    "cloudpickle==3.1.0",
-                    "defusedxml==0.7.1",
-                    "lz4==4.3.2",
-                    "matplotlib==3.9.2",
-                    "numpy==1.26.4",
-                    "pandas==2.2.3",
-                    "pyarrow==14.0.1",
-                    "pyspark==3.5.0",
-                    "scikit-learn==1.5.2",
-                    "scipy==1.14.1",
-                ],
+                code_path=["../dist/hotel_reservations-0.1.4-py3-none-any.whl"]
             )
 
     def register_model(self) -> None:
