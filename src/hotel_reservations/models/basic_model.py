@@ -170,7 +170,12 @@ class BasicModel:
                 version=self.data_version,
             )
             mlflow.log_input(dataset, context="training")
-            mlflow.sklearn.log_model(sk_model=self.pipeline, artifact_path="base-model", signature=signature)
+            mlflow.sklearn.log_model(
+                sk_model=self.pipeline,
+                artifact_path="base-model",
+                signature=signature,
+                code_path=["../dist/hotel_reservations-0.1.4-py3-none-any.whl"],
+            )
 
     def register_model(self) -> None:
         """Register model in Unity Catalog."""
