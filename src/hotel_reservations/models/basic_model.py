@@ -185,6 +185,7 @@ class BasicModel:
                 artifact_path="base-model",
                 signature=signature,
                 conda_env=conda_env,
+                code_paths=self.code_paths,
             )
 
     def register_model(self) -> None:
