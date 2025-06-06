@@ -79,7 +79,7 @@ class BasicModel:
         self.experiment_name = self.config.experiment_name_basic
         self.model_name = f"{self.catalog_name}.{self.schema_name}.model_basic"
         self.tags = tags.dict()
-        self.code_paths = ["../dist/hotel_reservations-0.1.4-py3-none-any.whl"]
+        self.code_paths = ["../dist/hotel_reservations-0.1.5-py3-none-any.whl"]
 
     def load_data(self) -> None:
         """Load training and testing data from Delta tables.
