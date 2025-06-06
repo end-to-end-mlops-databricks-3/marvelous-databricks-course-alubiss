@@ -22,6 +22,7 @@ from loguru import logger
 from mlflow import MlflowClient
 from mlflow.data.dataset_source import DatasetSource
 from mlflow.models import infer_signature
+from mlflow.utils.environment import _mlflow_conda_env
 from pyspark.sql import SparkSession
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
@@ -78,6 +79,7 @@ class BasicModel:
         self.experiment_name = self.config.experiment_name_basic
         self.model_name = f"{self.catalog_name}.{self.schema_name}.model_basic"
         self.tags = tags.dict()
+        self.code_paths = ["../dist/hotel_reservations-0.1.4-py3-none-any.whl"]
 
     def load_data(self) -> None:
         """Load training and testing data from Delta tables.
@@ -138,6 +140,12 @@ class BasicModel:
     def log_model(self) -> None:
         """Log the model using MLflow."""
         mlflow.set_experiment(self.experiment_name)
+
+        additional_pip_deps = ["pyspark==3.5.0"]
+        for package in self.code_paths:
+            whl_name = package.split("/")[-1]
+            additional_pip_deps.append(f"./code/{whl_name}")
+
         with mlflow.start_run(tags=self.tags) as run:
             self.run_id = run.info.run_id
 
@@ -170,11 +178,13 @@ class BasicModel:
                 version=self.data_version,
             )
             mlflow.log_input(dataset, context="training")
+
+            conda_env = _mlflow_conda_env(additional_pip_deps=additional_pip_deps)
             mlflow.sklearn.log_model(
                 sk_model=self.pipeline,
                 artifact_path="base-model",
                 signature=signature,
-                code_path=["../dist/hotel_reservations-0.1.4-py3-none-any.whl"]
+                conda_env=conda_env,
             )
 
     def register_model(self) -> None:
