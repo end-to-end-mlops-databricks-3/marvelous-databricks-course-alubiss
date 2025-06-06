@@ -174,7 +174,7 @@ class BasicModel:
                 sk_model=self.pipeline,
                 artifact_path="base-model",
                 signature=signature,
-                code_path=["../dist/hotel_reservations-0.1.4-py3-none-any.whl"],
+                conda_env=mlflow.spark.get_default_conda_env(),
             )
 
     def register_model(self) -> None:
