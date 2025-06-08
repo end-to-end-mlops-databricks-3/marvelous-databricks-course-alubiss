@@ -73,7 +73,7 @@ class FeatureLookUpModel:
         self.tags = tags.dict()
 
         # define code path
-        self.code_path = ["../dist/hotel_reservations-0.1.5-py3-none-any.whl"]
+        self.code_path = ["../dist/hotel_reservations-0.1.6-py3-none-any.whl"]
 
     def create_feature_table(self) -> None:
         """Create or update the hotel_reservations_features table and populate it.
