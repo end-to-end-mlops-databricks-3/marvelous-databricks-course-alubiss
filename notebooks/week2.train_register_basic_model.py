@@ -79,5 +79,3 @@ X_test = test_set.drop(config.target).toPandas()
 predictions_df = basic_model.load_latest_model_and_predict(X_test)
 
 # COMMAND ----------
-
-
