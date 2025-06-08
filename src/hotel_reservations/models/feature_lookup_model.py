@@ -237,6 +237,28 @@ class FeatureLookUpModel:
                 artifact_path="alubiss-pipeline-model-fe",
                 training_set=self.training_set,
                 signature=signature,
+                pip_requirements=[
+                    "mlflow==2.17.0",
+                    "azure-identity==1.17.1",
+                    "azure-storage-file-datalake==12.14.0",
+                    "bcrypt==3.2.0",
+                    "cloudpickle==3.1.0",
+                    "configparser==5.2.0",
+                    "defusedxml==0.7.1",
+                    "google-cloud-storage==2.10.0",
+                    "jaraco-collections==5.1.0",
+                    "lz4==4.3.2",
+                    "matplotlib==3.9.2",
+                    "numpy==1.26.4",
+                    "pandas==2.2.3",
+                    "platformdirs==3.10.0",
+                    "pyarrow==14.0.1",
+                    "pyopenssl==23.2.0",
+                    "pyspark==3.5.0",
+                    "scikit-learn==1.5.2",
+                    "scipy==1.14.1",
+                    "databricks-feature-lookup==1.*",
+                ],
             )
 
     def register_model(self) -> str:
