@@ -89,7 +89,7 @@ class FeatureLookUpModel:
         self.tags = tags.dict()
 
         # define code path
-        self.code_path = ["../dist/hotel_reservations-0.1.11-py3-none-any.whl"]
+        self.code_path = ["../dist/hotel_reservations-0.1.12-py3-none-any.whl"]
 
     def create_feature_table(self) -> None:
         """Create or update the hotel_reservations_features table and populate it.
@@ -250,7 +250,7 @@ class FeatureLookUpModel:
             mlflow.log_metric("f1score", f1)
 
             signature = infer_signature(self.X_train, y_pred)
-            additional_pip_deps = ["pyspark==3.5.0", "databricks-feature-lookup==1.*"]
+            additional_pip_deps = ["pyspark==3.5.0"]
             for package in self.code_path:
                 whl_name = package.split("/")[-1]
                 additional_pip_deps.append(f"./code/{whl_name}")
