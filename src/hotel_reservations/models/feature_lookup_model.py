@@ -15,6 +15,7 @@ from lightgbm import LGBMClassifier
 from loguru import logger
 from mlflow.models import infer_signature
 from mlflow.tracking import MlflowClient
+from mlflow.utils.environment import _mlflow_conda_env
 from pyspark.sql import DataFrame, SparkSession
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
@@ -230,6 +231,11 @@ class FeatureLookUpModel:
             mlflow.log_metric("f1score", f1)
 
             signature = infer_signature(self.X_train, y_pred)
+            additional_pip_deps = ["pyspark==3.5.0"]
+            for package in self.code_paths:
+                whl_name = package.split("/")[-1]
+                additional_pip_deps.append(f"./code/{whl_name}")
+            conda_env = _mlflow_conda_env(additional_pip_deps=additional_pip_deps)
 
             self.fe.log_model(
                 model=pipeline,
@@ -237,28 +243,8 @@ class FeatureLookUpModel:
                 artifact_path="alubiss-pipeline-model-fe",
                 training_set=self.training_set,
                 signature=signature,
-                pip_requirements=[
-                    "mlflow==2.17.0",
-                    "azure-identity==1.17.1",
-                    "azure-storage-file-datalake==12.14.0",
-                    "bcrypt==3.2.0",
-                    "cloudpickle==3.1.0",
-                    "configparser==5.2.0",
-                    "defusedxml==0.7.1",
-                    "google-cloud-storage==2.10.0",
-                    "jaraco-collections==5.1.0",
-                    "lz4==4.3.2",
-                    "matplotlib==3.9.2",
-                    "numpy==1.26.4",
-                    "pandas==2.2.3",
-                    "platformdirs==3.10.0",
-                    "pyarrow==14.0.1",
-                    "pyopenssl==23.2.0",
-                    "pyspark==3.5.0",
-                    "scikit-learn==1.5.2",
-                    "scipy==1.14.1",
-                    "databricks-feature-lookup==1.*",
-                ],
+                code_paths=self.code_paths,
+                conda_env=conda_env,
             )
 
     def register_model(self) -> str:
