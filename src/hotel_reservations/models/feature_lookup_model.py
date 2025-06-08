@@ -254,6 +254,7 @@ class FeatureLookUpModel:
                 training_set=self.training_set,
                 signature=signature,
                 code_path=self.code_path,
+                conda_env=conda_env,
             )
 
     def register_model(self) -> str:
