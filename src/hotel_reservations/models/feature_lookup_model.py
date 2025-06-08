@@ -28,10 +28,17 @@ from hotel_reservations.config import ProjectConfig, Tags
 
 
 class MyPyfuncWrapper(mlflow.pyfunc.PythonModel):
-    def __init__(self, pipeline):
+    """Wrapper class."""
+
+    def __init__(self, pipeline: object) -> None:
+        """Initialize the ModelWrapper.
+
+        :param pipeline: The underlying machine learning model.
+        """
         self.pipeline = pipeline
 
-    def predict(self, context, model_input):
+    def predict(self, context: mlflow.pyfunc.PythonModelContext, model_input: pd.DataFrame | np.ndarray) -> np.ndarray:
+        """Make predictions using the wrapped model."""
         return self.pipeline.predict(model_input)
 
 
@@ -243,7 +250,7 @@ class FeatureLookUpModel:
             mlflow.log_metric("f1score", f1)
 
             signature = infer_signature(self.X_train, y_pred)
-            additional_pip_deps = ["pyspark==3.5.0"]
+            additional_pip_deps = ["pyspark==3.5.0", "databricks-feature-lookup==1.*"]
             for package in self.code_path:
                 whl_name = package.split("/")[-1]
                 additional_pip_deps.append(f"./code/{whl_name}")
