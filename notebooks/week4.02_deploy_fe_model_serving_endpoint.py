@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install ../dist/hotel_reservations-0.1.9-py3-none-any.whl
+# MAGIC %pip install ../dist/hotel_reservations-0.1.11-py3-none-any.whl
 
 # COMMAND ----------
 
