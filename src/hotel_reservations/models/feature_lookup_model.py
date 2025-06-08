@@ -6,6 +6,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../src")))
 
 import mlflow
+import mlflow.pyfunc
 import numpy as np
 import pandas as pd
 from databricks import feature_engineering
@@ -25,7 +26,6 @@ from sklearn.preprocessing import OneHotEncoder
 
 from hotel_reservations.config import ProjectConfig, Tags
 
-import mlflow.pyfunc
 
 class MyPyfuncWrapper(mlflow.pyfunc.PythonModel):
     def __init__(self, pipeline):
@@ -33,6 +33,7 @@ class MyPyfuncWrapper(mlflow.pyfunc.PythonModel):
 
     def predict(self, context, model_input):
         return self.pipeline.predict(model_input)
+
 
 class DateFeatureEngineer(BaseEstimator, TransformerMixin):
     """Date features engineering class."""
@@ -82,7 +83,6 @@ class FeatureLookUpModel:
 
         # define code path
         self.code_path = ["../dist/hotel_reservations-0.1.9-py3-none-any.whl"]
-
 
     def create_feature_table(self) -> None:
         """Create or update the hotel_reservations_features table and populate it.
@@ -254,7 +254,7 @@ class FeatureLookUpModel:
                 artifact_path="alubiss-pipeline-model-fe",
                 python_model=MyPyfuncWrapper(pipeline),
                 code_path=self.code_path,
-                conda_env=conda_env
+                conda_env=conda_env,
             )
 
             self.fe.log_model(
