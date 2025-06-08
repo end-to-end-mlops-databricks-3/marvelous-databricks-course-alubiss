@@ -1,4 +1,12 @@
 # Databricks notebook source
+# MAGIC %pip install ../dist/hotel_reservations-0.1.5-py3-none-any.whl
+
+# COMMAND ----------
+
+# MAGIC %restart_python
+
+# COMMAND ----------
+
 import hashlib
 import os
 import sys
@@ -264,5 +272,3 @@ model_uri = f"models:/{model_name}@latest-ab-model"
 model = mlflow.pyfunc.load_model(model_uri)
 predictions = model.predict(df2)
 predictions
-
-# COMMAND ----------

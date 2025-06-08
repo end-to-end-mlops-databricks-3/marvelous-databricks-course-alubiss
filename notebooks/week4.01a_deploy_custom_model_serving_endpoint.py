@@ -1,4 +1,12 @@
 # Databricks notebook source
+# MAGIC %pip install ../dist/hotel_reservations-0.1.5-py3-none-any.whl
+
+# COMMAND ----------
+
+# MAGIC %restart_python
+
+# COMMAND ----------
+
 import os
 import sys
 
@@ -31,8 +39,8 @@ schema_name = config.schema_name
 
 # Initialize feature store manager
 model_serving = ModelServing(
-    model_name=f"{catalog_name}.{schema_name}.model_basic",
-    endpoint_name="alubiss-base-hotel-reservations-model-serving",
+    model_name=f"{catalog_name}.{schema_name}.hotel_reservations_model_custom",
+    endpoint_name="alubiss-custom-hotel-reservations-model-serving",
 )
 
 # COMMAND ----------
@@ -118,7 +126,7 @@ Each dataframe record in the request body should be list of json with columns lo
 
 def call_endpoint(record):
     """Calls the model serving endpoint with a given input record."""
-    serving_endpoint = f"https://{os.environ['DBR_HOST']}/serving-endpoints/alubiss-base-hotel-reservations-model-serving/invocations"
+    serving_endpoint = f"https://{os.environ['DBR_HOST']}/serving-endpoints/alubiss-custom-hotel-reservations-model-serving/invocations"
 
     response = requests.post(
         serving_endpoint,
@@ -140,3 +148,7 @@ for i in range(len(dataframe_records)):
     print(f"Response Status: {status_code}")
     print(f"Response Text: {response_text}")
     time.sleep(0.2)
+
+# COMMAND ----------
+
+

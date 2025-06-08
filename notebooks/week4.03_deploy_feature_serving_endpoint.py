@@ -1,4 +1,12 @@
 # Databricks notebook source
+# MAGIC %pip install ../dist/hotel_reservations-0.1.5-py3-none-any.whl
+
+# COMMAND ----------
+
+# MAGIC %restart_python
+
+# COMMAND ----------
+
 import os
 import sys
 
@@ -154,5 +162,3 @@ response = requests.post(
     json={"dataframe_split": {"columns": ["Client_ID"], "data": [["27633"]]}},
 )
 response.text
-
-# COMMAND ----------

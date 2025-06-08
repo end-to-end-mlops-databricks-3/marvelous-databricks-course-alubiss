@@ -1,4 +1,12 @@
 # Databricks notebook source
+# MAGIC %pip install ../dist/hotel_reservations-0.1.5-py3-none-any.whl
+
+# COMMAND ----------
+
+# MAGIC %restart_python
+
+# COMMAND ----------
+
 import os
 import sys
 
@@ -71,3 +79,5 @@ X_test = test_set.drop(config.target).toPandas()
 predictions_df = basic_model.load_latest_model_and_predict(X_test)
 
 # COMMAND ----------
+
+
