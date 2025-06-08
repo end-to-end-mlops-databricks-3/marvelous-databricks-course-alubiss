@@ -15,6 +15,7 @@ from lightgbm import LGBMClassifier
 from loguru import logger
 from mlflow.models import infer_signature
 from mlflow.tracking import MlflowClient
+from mlflow.utils.environment import _mlflow_conda_env
 from pyspark.sql import DataFrame, SparkSession
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
@@ -70,6 +71,9 @@ class FeatureLookUpModel:
         # MLflow configuration
         self.experiment_name = self.config.experiment_name_fe
         self.tags = tags.dict()
+
+        # define code path
+        self.code_path = ["../dist/hotel_reservations-0.1.5-py3-none-any.whl"]
 
     def create_feature_table(self) -> None:
         """Create or update the hotel_reservations_features table and populate it.
@@ -230,12 +234,26 @@ class FeatureLookUpModel:
             mlflow.log_metric("f1score", f1)
 
             signature = infer_signature(self.X_train, y_pred)
+            additional_pip_deps = ["pyspark==3.5.0"]
+            for package in self.code_path:
+                whl_name = package.split("/")[-1]
+                additional_pip_deps.append(f"./code/{whl_name}")
+            conda_env = _mlflow_conda_env(additional_pip_deps=additional_pip_deps)
+
+            mlflow.pyfunc.log_model(
+                artifact_path="alubiss-pipeline-model-fe",
+                python_model=pipeline,
+                code_path=self.code_path,
+                conda_env=conda_env,
+            )
+
             self.fe.log_model(
                 model=pipeline,
                 flavor=mlflow.sklearn,
                 artifact_path="alubiss-pipeline-model-fe",
                 training_set=self.training_set,
                 signature=signature,
+                code_path=self.code_path,
             )
 
     def register_model(self) -> str:
