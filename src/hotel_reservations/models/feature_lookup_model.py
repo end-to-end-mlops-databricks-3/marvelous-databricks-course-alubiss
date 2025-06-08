@@ -245,6 +245,7 @@ class FeatureLookUpModel:
                 python_model=pipeline,
                 code_path=self.code_path,
                 conda_env=conda_env,
+                env_manager="conda"
             )
 
             self.fe.log_model(
