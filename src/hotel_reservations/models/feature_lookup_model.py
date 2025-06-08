@@ -23,7 +23,16 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
-from hotel_reservations.config import ProjectConfig, Tags
+#from hotel_reservations.config import ProjectConfig, Tags
+
+import mlflow.pyfunc
+
+class MyPyfuncWrapper(mlflow.pyfunc.PythonModel):
+    def __init__(self, pipeline):
+        self.pipeline = pipeline
+
+    def predict(self, context, model_input):
+        return self.pipeline.predict(model_input)
 
 
 class DateFeatureEngineer(BaseEstimator, TransformerMixin):
@@ -243,13 +252,13 @@ class FeatureLookUpModel:
             mlflow.sklearn.autolog(log_models=False)
             mlflow.pyfunc.log_model(
                 artifact_path="alubiss-pipeline-model-fe",
-                python_model=pipeline,
+                python_model=MyPyfuncWrapper(pipeline),
                 code_path=self.code_path,
                 conda_env=conda_env
             )
 
             self.fe.log_model(
-                model=pipeline,
+                model=MyPyfuncWrapper(pipeline),
                 flavor=mlflow.pyfunc,
                 artifact_path="alubiss-pipeline-model-fe",
                 training_set=self.training_set,
