@@ -240,6 +240,7 @@ class FeatureLookUpModel:
                 additional_pip_deps.append(f"./code/{whl_name}")
             conda_env = _mlflow_conda_env(additional_pip_deps=additional_pip_deps)
 
+            mlflow.sklearn.autolog(log_models=False)
             mlflow.pyfunc.log_model(
                 artifact_path="alubiss-pipeline-model-fe",
                 python_model=pipeline,
@@ -250,7 +251,7 @@ class FeatureLookUpModel:
 
             self.fe.log_model(
                 model=pipeline,
-                flavor=mlflow.sklearn,
+                flavor=mlflow.pyfunc,
                 artifact_path="alubiss-pipeline-model-fe",
                 training_set=self.training_set,
                 signature=signature,
