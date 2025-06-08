@@ -15,7 +15,6 @@ from lightgbm import LGBMClassifier
 from loguru import logger
 from mlflow.models import infer_signature
 from mlflow.tracking import MlflowClient
-from mlflow.utils.environment import _mlflow_conda_env
 from pyspark.sql import DataFrame, SparkSession
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
@@ -231,20 +230,12 @@ class FeatureLookUpModel:
             mlflow.log_metric("f1score", f1)
 
             signature = infer_signature(self.X_train, y_pred)
-            additional_pip_deps = ["pyspark==3.5.0"]
-            for package in self.code_paths:
-                whl_name = package.split("/")[-1]
-                additional_pip_deps.append(f"./code/{whl_name}")
-            conda_env = _mlflow_conda_env(additional_pip_deps=additional_pip_deps)
-
             self.fe.log_model(
                 model=pipeline,
                 flavor=mlflow.sklearn,
                 artifact_path="alubiss-pipeline-model-fe",
                 training_set=self.training_set,
                 signature=signature,
-                code_paths=self.code_paths,
-                conda_env=conda_env,
             )
 
     def register_model(self) -> str:
