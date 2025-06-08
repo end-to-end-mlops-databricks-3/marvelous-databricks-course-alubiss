@@ -23,7 +23,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
-#from hotel_reservations.config import ProjectConfig, Tags
+from hotel_reservations.config import ProjectConfig, Tags
 
 import mlflow.pyfunc
 
@@ -33,65 +33,6 @@ class MyPyfuncWrapper(mlflow.pyfunc.PythonModel):
 
     def predict(self, context, model_input):
         return self.pipeline.predict(model_input)
-
-"""Configuration file for the project."""
-
-from typing import Any
-
-import yaml
-from pydantic import BaseModel
-
-
-class ProjectConfig(BaseModel):
-    """Represent project configuration parameters loaded from YAML.
-
-    Handles feature specifications, catalog details, and experiment parameters.
-    Supports environment-specific configuration overrides.
-    """
-
-    id_cols: list[str]
-    num_features: list[str]
-    date_features: list[str]
-    cat_features: list[str]
-    target: str
-    catalog_name: str
-    schema_name: str
-    parameters: dict[str, Any]
-    hyperparameters_tuning: bool
-    experiment_name_basic: str
-    experiment_name_custom: str
-    experiment_name_fe: str
-    banned_clients_ids: list[str]
-
-    @classmethod
-    def from_yaml(cls, config_path: str, env: str = "dev") -> "ProjectConfig":
-        """Load and parse configuration settings from a YAML file.
-
-        :param config_path: Path to the YAML configuration file
-        :param env: Environment name to load environment-specific settings
-        :return: ProjectConfig instance initialized with parsed configuration
-        """
-        if env not in ["prd", "acc", "dev"]:
-            raise ValueError(f"Invalid environment: {env}. Expected 'prd', 'acc', or 'dev'")
-
-        with open(config_path) as f:
-            config_dict = yaml.safe_load(f)
-            config_dict["catalog_name"] = config_dict[env]["catalog_name"]
-            config_dict["schema_name"] = config_dict[env]["schema_name"]
-
-            return cls(**config_dict)
-
-
-class Tags(BaseModel):
-    """Represents a set of tags for a Git commit.
-
-    Contains information about the Git SHA, branch, and job run ID.
-    """
-
-    git_sha: str
-    branch: str
-    job_run_id: str
-
 
 class DateFeatureEngineer(BaseEstimator, TransformerMixin):
     """Date features engineering class."""
