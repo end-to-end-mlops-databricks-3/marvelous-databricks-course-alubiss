@@ -23,11 +23,11 @@ is_test = args.is_test
 logger.info("Configuration loaded:")
 logger.info(yaml.dump(config, default_flow_style=False))
 
-# Load the house prices dataset
+# Load the  dataset
 spark = SparkSession.builder.getOrCreate()
 
 df = spark.read.csv(
-    f"/Volumes/{config.catalog_name}/{config.schema_name}/data/data.csv", header=True, inferSchema=True
+    f"/Volumes/{config.catalog_name}/{config.schema_name}/alubiss/hotel_reservations.csv", header=True, inferSchema=True
 ).toPandas()
 
 if is_test == 0:
