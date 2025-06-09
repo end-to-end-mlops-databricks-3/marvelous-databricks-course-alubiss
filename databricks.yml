@@ -48,9 +48,9 @@ resources:
         timezone_id: "Europe/Amsterdam"
         pause_status: ${var.schedule_pause_status}
       tags:
-        project_name: "house-price"
+        project_name: "hotel-reservations"
       job_clusters:
-        - job_cluster_key: "house-price-cluster"
+        - job_cluster_key: "hotel-reservations-cluster"
           new_cluster:
             spark_version: "15.4.x-scala2.12"
             data_security_mode: "SINGLE_USER"
@@ -64,7 +64,7 @@ resources:
 
       tasks:
         - task_key: "preprocessing"
-          job_cluster_key: "house-price-cluster"
+          job_cluster_key: "hotel-reservations-cluster"
           spark_python_task:
             python_file: "scripts/01.process_data.py"
             parameters:
@@ -79,11 +79,11 @@ resources:
            - whl: ./dist/*.whl
            - whl: /Volumes/mlops_prd/utils/package/marvelous-${var.marvelous_version}-py3-none-any.whl
         - task_key: "train_model"
-          job_cluster_key: "house-price-cluster"
+          job_cluster_key: "hotel-reservations-cluster"
           depends_on:
             - task_key: "preprocessing"
           spark_python_task:
-            python_file: "scripts/02.train_register_fe_model.py"
+            python_file: "scripts/02.train_register_model_pipeline.py"
             parameters:
               - "model_train_register"
               - "--root_path"
@@ -112,7 +112,7 @@ resources:
           depends_on:
             - task_key: "model_updated"
               outcome: "true"
-          job_cluster_key: "house-price-cluster"
+          job_cluster_key: "hotel-reservations-cluster"
           spark_python_task:
             python_file: "scripts/03.deploy_model.py"
             parameters:
@@ -137,7 +137,7 @@ resources:
           depends_on:
             - task_key: "post_commit_status_required"
               outcome: "true"
-          job_cluster_key: "house-price-cluster"
+          job_cluster_key: "hotel-reservations-cluster"
           spark_python_task:
             python_file: "scripts/04.post_commit_status.py"
             parameters:
