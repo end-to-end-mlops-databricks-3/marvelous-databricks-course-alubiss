@@ -12,6 +12,8 @@ args = create_parser()
 
 root_path = args.root_path
 config_path = f"{root_path}/files/project_config.yml"
+with open("{root_path}/files/version.txt") as f:
+    version = f.read().strip()
 
 config = ProjectConfig.from_yaml(config_path=config_path, env=args.env)
 spark = SparkSession.builder.getOrCreate()
@@ -20,7 +22,9 @@ tags_dict = {"git_sha": args.git_sha, "branch": args.branch, "job_run_id": args.
 tags = Tags(**tags_dict)
 
 # Initialize model
-modeling_ppl = PocessModeling(config=config, tags=tags, spark=spark, code_paths=["../dist/*.whl"])
+modeling_ppl = PocessModeling(
+    config=config, tags=tags, spark=spark, code_paths=[f"../dist/hotel_reservations-{version}-py3-none-any.whl"]
+)
 logger.info("Model initialized.")
 
 # Load data and prepare features
