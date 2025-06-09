@@ -428,6 +428,23 @@ class PocessModeling:
         y_true = test_set[self.config.target].map({"Not_Canceled": 0, "Canceled": 1})
         X_test = test_set.drop(columns=[self.config.target])
 
+        cols_types = {
+            "required_car_parking_space": "int32",
+            "no_of_adults": "int32",
+            "no_of_children": "int32",
+            "no_of_weekend_nights": "int32",
+            "no_of_week_nights": "int32",
+            "lead_time": "int32",
+            "repeated_guest": "int32",
+            "no_of_previous_cancellations": "int32",
+            "no_of_previous_bookings_not_canceled": "int32",
+            "avg_price_per_room": "float32",
+            "no_of_special_requests": "int32",
+            "arrival_month": "int32",
+        }
+
+        X_test = X_test.astype(cols_types)
+
         # Get predictions from the latest registered model
         predictions_latest = self.load_latest_model_and_predict(X_test)
         y_pred_latest = (predictions_latest["Proba"] >= 0.5).astype(int)
