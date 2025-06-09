@@ -34,6 +34,7 @@ logger.info("Loaded data, prepared features.")
 if config.hyperparameters_tuning:
     modeling_ppl.tune_hyperparameters()
 modeling_ppl.train()
+modeling_ppl.log_model()
 
 # Evaluate model
 # Load test set from Delta table
