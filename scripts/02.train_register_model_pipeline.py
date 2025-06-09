@@ -43,7 +43,7 @@ test_set = spark.table(f"{config.catalog_name}.{config.schema_name}.test_set").l
 test_set = test_set.toPandas()
 
 model_improved = modeling_ppl.model_improved(test_set=test_set)
-logger.info("Model evaluation completed, model improved: ", model_improved)
+logger.info(f"Model evaluation completed, model improved: {model_improved}")
 
 is_test = args.is_test
 
@@ -54,7 +54,7 @@ if is_test == 1:
 if model_improved:
     # Register the model
     latest_version = modeling_ppl.register_model()
-    logger.info("New model registered with version:", latest_version)
+    logger.info(f"New model registered with version: {latest_version}")
     dbutils.jobs.taskValues.set(key="model_version", value=latest_version)
     dbutils.jobs.taskValues.set(key="model_updated", value=1)
 
