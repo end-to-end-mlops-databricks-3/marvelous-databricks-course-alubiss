@@ -147,6 +147,7 @@ def generate_synthetic_data(df: pd.DataFrame, drift: bool = False, num_rows: int
         "arrival_year",
         "arrival_date",
         "required_car_parking_space",
+        "lead_time"
     }
     for col in int_columns.intersection(df.columns):
         synthetic_data[col] = synthetic_data[col].astype(np.int32)
