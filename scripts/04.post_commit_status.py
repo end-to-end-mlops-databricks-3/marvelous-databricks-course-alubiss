@@ -1,12 +1,14 @@
+"""Post commit status module."""
+
 import os
 import sys
 from pathlib import Path
 
 sys.path.append(str(Path.cwd().parent / "src"))
 
-import argparse
 import requests
 from loguru import logger
+
 from hotel_reservations.common import create_parser, get_dbr_host
 
 args = create_parser()
@@ -26,14 +28,14 @@ link_to_databricks_run = f"{host}/jobs/{job_id}/runs/{run_id}"
 headers = {
     "Accept": "application/vnd.github+json",
     "Authorization": f"Bearer {token}",
-    "X-GitHub-Api-Version": "2022-11-28"
+    "X-GitHub-Api-Version": "2022-11-28",
 }
 
 payload = {
     "state": "success",
     "target_url": f"{link_to_databricks_run}",
     "description": "Integration test is succesful!",
-    "context": "integration-testing/databricks"
+    "context": "integration-testing/databricks",
 }
 
 response = requests.post(url, headers=headers, json=payload)

@@ -1,13 +1,12 @@
-import argparse
+"""Modeling Pipeline module."""
 
-import mlflow
 from loguru import logger
 from pyspark.dbutils import DBUtils
 from pyspark.sql import SparkSession
 
+from hotel_reservations.common import create_parser
 from hotel_reservations.config import ProjectConfig, Tags
 from hotel_reservations.models.modeling_pipeline import PocessModeling
-from hotel_reservations.common import create_parser
 
 args = create_parser()
 
@@ -47,7 +46,7 @@ logger.info("Model evaluation completed, model improved: ", model_improved)
 is_test = args.is_test
 
 # when running test, always register and deploy
-if is_test==1:
+if is_test == 1:
     model_improved = True
 
 if model_improved:
