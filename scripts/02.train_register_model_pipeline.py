@@ -20,9 +20,7 @@ tags_dict = {"git_sha": args.git_sha, "branch": args.branch, "job_run_id": args.
 tags = Tags(**tags_dict)
 
 # Initialize model
-modeling_ppl = PocessModeling(
-    config=config, tags=tags, spark=spark, code_paths=["../dist/hotel_reservations-0.1.5-py3-none-any.whl"]
-)
+modeling_ppl = PocessModeling(config=config, tags=tags, spark=spark, code_paths=["../dist/*.whl"])
 logger.info("Model initialized.")
 
 # Load data and prepare features
