@@ -414,3 +414,43 @@ class PocessModeling:
 
         # Return predictions as a DataFrame
         return predictions
+
+    def model_improved(self, test_set: pd.DataFrame) -> bool:
+        """Evaluate the model performance on the test set using classification metrics.
+
+        Compares the current model with the latest registered model using accuracy and F1 score.
+        :param test_set: DataFrame containing the test data (must include target column).
+        :return: True if the current model performs better, False otherwise.
+        """
+        from sklearn.metrics import accuracy_score, f1_score
+
+        # Prepare test features and true labels
+        X_test = test_set.drop(self.config.target, axis=1)
+        y_true = test_set[self.config.target].map({"Not_Canceled": 0, "Canceled": 1})
+
+        # Get predictions from the latest registered model
+        predictions_latest = self.load_latest_model_and_predict(X_test)
+        y_pred_latest = (predictions_latest["Proba"] >= 0.5).astype(int)
+
+        # Get predictions from the current model
+        current_model_uri = f"runs:/{self.run_id}/pyfunc-alubiss-{self.model_name}"
+        current_model = mlflow.pyfunc.load_model(current_model_uri)
+        predictions_current = current_model.predict(X_test)
+        y_pred_current = (predictions_current["Proba"] >= 0.5).astype(int)
+
+        # Calculate classification metrics
+        acc_latest = accuracy_score(y_true, y_pred_latest)
+        f1_latest = f1_score(y_true, y_pred_latest)
+        acc_current = accuracy_score(y_true, y_pred_current)
+        f1_current = f1_score(y_true, y_pred_current)
+
+        logger.info(f"Accuracy (Current): {acc_current}, F1 (Current): {f1_current}")
+        logger.info(f"Accuracy (Latest): {acc_latest}, F1 (Latest): {f1_latest}")
+
+        # Compare models based on F1 score
+        if f1_current > f1_latest:
+            logger.info("Current model performs better.")
+            return True
+        else:
+            logger.info("Current model performs worse or equal.")
+            return False
