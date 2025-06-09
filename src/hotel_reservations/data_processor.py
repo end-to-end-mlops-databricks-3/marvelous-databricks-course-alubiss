@@ -153,16 +153,20 @@ def generate_synthetic_data(df: pd.DataFrame, drift: bool = False, num_rows: int
         synthetic_data[col] = synthetic_data[col].astype(np.int32)
 
     # Only process columns if they exist in synthetic_data
+    for col in ["avg_price_per_room"]:
+        if col in synthetic_data.columns:
+            synthetic_data[col] = pd.to_numeric(synthetic_data[col], errors="coerce")
+            synthetic_data[col] = synthetic_data[col].astype(np.float64)
+
     for col in [
         "repeated_guest",
         "no_of_previous_cancellations",
         "no_of_previous_bookings_not_canceled",
-        "avg_price_per_room",
         "no_of_special_requests",
     ]:
         if col in synthetic_data.columns:
             synthetic_data[col] = pd.to_numeric(synthetic_data[col], errors="coerce")
-            synthetic_data[col] = synthetic_data[col].astype(np.float64)
+            synthetic_data[col] = synthetic_data[col].astype(np.int32)
 
     timestamp_base = int(time.time() * 1000)
     synthetic_data["Client_ID"] = [str(timestamp_base + i) for i in range(num_rows)]
