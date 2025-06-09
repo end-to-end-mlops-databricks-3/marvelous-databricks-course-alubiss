@@ -109,7 +109,10 @@ def generate_synthetic_data(df: pd.DataFrame, drift: bool = False, num_rows: int
         if column in ["Client_ID", "Booking_ID"]:
             continue
 
-        if pd.api.types.is_numeric_dtype(df[column]):
+        if column == "required_car_parking_space":
+            synthetic_data[column] = np.random.choice([0, 1], num_rows)
+
+        elif pd.api.types.is_numeric_dtype(df[column]):
             synthetic_data[column] = np.random.normal(df[column].mean(), df[column].std(), num_rows)
 
         elif pd.api.types.is_categorical_dtype(df[column]) or pd.api.types.is_object_dtype(df[column]):
