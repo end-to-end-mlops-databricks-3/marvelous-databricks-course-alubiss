@@ -364,6 +364,7 @@ class PocessModeling:
             alias="latest-model",
             version=latest_version,
         )
+        return latest_version
 
     def retrieve_current_run_dataset(self) -> DatasetSource:
         """Retrieve the dataset used in the current MLflow run.

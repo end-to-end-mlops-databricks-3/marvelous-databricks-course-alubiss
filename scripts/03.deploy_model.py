@@ -18,6 +18,7 @@ config_path = f"{root_path}/files/project_config.yml"
 spark = SparkSession.builder.getOrCreate()
 dbutils = DBUtils(spark)
 model_version = dbutils.jobs.taskValues.get(taskKey="train_model", key="model_version")
+logger.info(f"Model version: {model_version}")
 
 # Load project config
 config = ProjectConfig.from_yaml(config_path=config_path, env=args.env)
