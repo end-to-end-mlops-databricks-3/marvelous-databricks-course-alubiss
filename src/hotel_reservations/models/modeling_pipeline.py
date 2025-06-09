@@ -425,7 +425,7 @@ class PocessModeling:
         from sklearn.metrics import accuracy_score, f1_score
 
         # Prepare test features and true labels
-        X_test = test_set.drop(self.config.target, axis=1)
+        X_test = test_set.drop(columns=[self.config.target])
         y_true = test_set[self.config.target].map({"Not_Canceled": 0, "Canceled": 1})
 
         # Get predictions from the latest registered model
