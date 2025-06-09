@@ -27,7 +27,10 @@ logger.info(yaml.dump(config, default_flow_style=False))
 spark = SparkSession.builder.getOrCreate()
 
 df = spark.read.csv(
-    f"/Volumes/{config.catalog_name}/{config.schema_name}/alubiss/hotel_reservations.csv", header=True, inferSchema=True, sep=";"
+    f"/Volumes/{config.catalog_name}/{config.schema_name}/alubiss/hotel_reservations.csv",
+    header=True,
+    inferSchema=True,
+    sep=";",
 ).toPandas()
 
 if is_test == 0:
