@@ -39,6 +39,7 @@ modeling_ppl.train()
 # Load test set from Delta table
 spark = SparkSession.builder.getOrCreate()
 test_set = spark.table(f"{config.catalog_name}.{config.schema_name}.test_set").limit(100)
+test_set = test_set.toPandas()
 
 model_improved = modeling_ppl.model_improved(test_set=test_set)
 logger.info("Model evaluation completed, model improved: ", model_improved)

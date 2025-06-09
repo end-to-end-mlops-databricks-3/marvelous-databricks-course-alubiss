@@ -425,7 +425,6 @@ class PocessModeling:
         from sklearn.metrics import accuracy_score, f1_score
 
         # Prepare test features and true labels
-        test_set = test_set.toPandas()
         y_true = test_set[self.config.target].map({"Not_Canceled": 0, "Canceled": 1})
         X_test = test_set.drop(columns=[self.config.target])
 
