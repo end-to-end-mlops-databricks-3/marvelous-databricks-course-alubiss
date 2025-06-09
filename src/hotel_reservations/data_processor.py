@@ -114,6 +114,7 @@ def generate_synthetic_data(df: pd.DataFrame, drift: bool = False, num_rows: int
 
         elif pd.api.types.is_numeric_dtype(df[column]):
             synthetic_data[column] = np.random.normal(df[column].mean(), df[column].std(), num_rows)
+            synthetic_data[column] = synthetic_data[column].clip(lower=0)
 
         elif pd.api.types.is_categorical_dtype(df[column]) or pd.api.types.is_object_dtype(df[column]):
             synthetic_data[column] = np.random.choice(
@@ -130,6 +131,7 @@ def generate_synthetic_data(df: pd.DataFrame, drift: bool = False, num_rows: int
 
         else:
             synthetic_data[column] = np.random.choice(df[column], num_rows)
+            synthetic_data[column] = synthetic_data[column].clip(lower=0)
 
     # Convert relevant numeric columns to integers
     int_columns = {
@@ -144,6 +146,7 @@ def generate_synthetic_data(df: pd.DataFrame, drift: bool = False, num_rows: int
         "arrival_month",
         "arrival_year",
         "arrival_date",
+        "required_car_parking_space",
     }
     for col in int_columns.intersection(df.columns):
         synthetic_data[col] = synthetic_data[col].astype(np.int64)
