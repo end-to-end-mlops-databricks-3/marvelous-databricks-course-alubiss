@@ -149,7 +149,7 @@ def generate_synthetic_data(df: pd.DataFrame, drift: bool = False, num_rows: int
         "required_car_parking_space",
     }
     for col in int_columns.intersection(df.columns):
-        synthetic_data[col] = synthetic_data[col].astype(np.int64)
+        synthetic_data[col] = synthetic_data[col].astype(np.int32)
 
     # Only process columns if they exist in synthetic_data
     for col in [
