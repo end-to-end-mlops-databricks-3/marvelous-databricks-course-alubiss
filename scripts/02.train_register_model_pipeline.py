@@ -12,8 +12,6 @@ args = create_parser()
 
 root_path = args.root_path
 config_path = f"{root_path}/files/project_config.yml"
-with open("{root_path}/files/version.txt") as f:
-    version = f.read().strip()
 
 config = ProjectConfig.from_yaml(config_path=config_path, env=args.env)
 spark = SparkSession.builder.getOrCreate()
@@ -23,7 +21,7 @@ tags = Tags(**tags_dict)
 
 # Initialize model
 modeling_ppl = PocessModeling(
-    config=config, tags=tags, spark=spark, code_paths=[f"../dist/hotel_reservations-{version}-py3-none-any.whl"]
+    config=config, tags=tags, spark=spark, code_paths=["../dist/hotel_reservations/models/modeling_pipeline.py"]
 )
 logger.info("Model initialized.")
 
