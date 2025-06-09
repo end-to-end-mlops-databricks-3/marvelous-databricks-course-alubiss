@@ -426,6 +426,7 @@ class PocessModeling:
 
         # Prepare test features and true labels
         X_test = test_set.drop(self.config.target)
+        X_test = X_test.toPandas()
         y_true = test_set[self.config.target].map({"Not_Canceled": 0, "Canceled": 1})
 
         # Get predictions from the latest registered model
