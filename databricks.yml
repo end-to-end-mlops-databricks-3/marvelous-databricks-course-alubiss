@@ -28,7 +28,7 @@ variables:
     description: schedule pause status
     default: PAUSED
   is_test:
-    default: 0
+    default: 1
   env:
     description: environment
     default: dev
