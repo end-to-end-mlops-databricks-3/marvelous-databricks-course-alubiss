@@ -5,6 +5,9 @@
 bundle:
   name: marvelous-databricks-course-alubiss
 
+include:
+  - bundle_monitoring.yml
+
 artifacts:
   default:
     type: whl
