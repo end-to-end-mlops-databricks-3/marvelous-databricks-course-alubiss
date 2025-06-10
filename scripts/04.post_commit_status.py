@@ -21,6 +21,12 @@ git_sha = args.git_sha
 job_id = args.job_id
 run_id = args.job_run_id
 
+logger.info(f"Org: {org}")
+logger.info(f"Repo: {repo}")
+logger.info(f"Git sha: {git_sha}")
+logger.info(f"Job id: {job_id}")
+logger.info(f"Run id: {run_id}")
+
 token = os.environ["TOKEN_STATUS_CHECK"]
 url = f"https://api.github.com/repos/{org}/{repo}/statuses/{git_sha}"
 link_to_databricks_run = f"{host}/jobs/{job_id}/runs/{run_id}"

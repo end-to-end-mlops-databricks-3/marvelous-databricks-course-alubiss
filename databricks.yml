@@ -17,7 +17,7 @@ variables:
     default: abcd
   repo:
     description: repo name
-    default: repo
+    default: marvelous-databricks-course-alubiss
   org:
     description: GitHub organization
     default: end-to-end-mlops-databricks-3
