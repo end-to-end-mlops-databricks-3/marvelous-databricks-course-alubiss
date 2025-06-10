@@ -39,4 +39,4 @@ payload = {
 }
 
 response = requests.post(url, headers=headers, json=payload)
-logger.info("Status:", response.status_code)
+logger.info(f"Status: {response.status_code}")
