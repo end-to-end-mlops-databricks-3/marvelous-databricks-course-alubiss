@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install ../dist/hotel_reservations-0.1.5-py3-none-any.whl
+# MAGIC %pip install ../dist/hotel_reservations-1.1.1-py3-none-any.whl
 
 # COMMAND ----------
 
@@ -67,6 +67,7 @@ print(feature_importances.head(5))
 # MAGIC ## Generate Synthetic Data
 
 # COMMAND ----------
+
 from hotel_reservations.data_processor import generate_synthetic_data
 
 inference_data_skewed = generate_synthetic_data(modeling_ppl.X_train, drift= True, num_rows=200)
