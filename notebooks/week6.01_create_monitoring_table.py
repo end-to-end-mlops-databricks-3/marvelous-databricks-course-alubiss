@@ -3,6 +3,10 @@
 
 # COMMAND ----------
 
+# MAGIC %restart_python
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Feature Importance
 

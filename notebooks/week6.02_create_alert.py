@@ -1,4 +1,12 @@
 # Databricks notebook source
+!pip install databricks-sdk==0.32.0
+
+# COMMAND ----------
+
+# MAGIC %restart_python
+
+# COMMAND ----------
+
 import time
 
 from databricks.sdk import WorkspaceClient
@@ -40,3 +48,7 @@ alert = w.alerts.create(
 # cleanup
 w.queries.delete(id=query.id)
 w.alerts.delete(id=alert.id)
+
+# COMMAND ----------
+
+
