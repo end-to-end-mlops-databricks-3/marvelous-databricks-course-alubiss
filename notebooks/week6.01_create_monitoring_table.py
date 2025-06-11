@@ -261,3 +261,144 @@ workspace = WorkspaceClient()
 config = ProjectConfig.from_yaml(config_path="../project_config.yml", env="dev")
 
 create_or_refresh_monitoring(config=config, spark=spark, workspace=workspace)
+
+# COMMAND ----------
+
+tags = Tags(**{"git_sha": "abcd12345", "branch": "week2", "job_run_id": "1234567890"})
+inf_table = spark.sql(
+    f"SELECT * FROM mlops_dev.olalubic.`model-serving-payload_payload`"
+)
+
+# COMMAND ----------
+
+from databricks.sdk import WorkspaceClient
+from databricks.sdk.errors import NotFound
+from databricks.sdk.service.catalog import (
+    MonitorInferenceLog,
+    MonitorInferenceLogProblemType,
+)
+from loguru import logger
+from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+from pyspark.sql.types import ArrayType, DoubleType, IntegerType, StringType, StructField, StructType
+
+from hotel_reservations.config import ProjectConfig, Tags
+from hotel_reservations.models.modeling_pipeline import PocessModeling
+
+# COMMAND ----------
+
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, ArrayType
+
+request_schema = StructType(
+    [
+        StructField(
+            "dataframe_records",
+            ArrayType(
+                StructType(
+                    [
+                        StructField("required_car_parking_space", IntegerType(), True),
+                        StructField("no_of_adults", IntegerType(), True),
+                        StructField("no_of_children", IntegerType(), True),
+                        StructField("no_of_weekend_nights", IntegerType(), True),
+                        StructField("no_of_week_nights", IntegerType(), True),
+                        StructField("lead_time", IntegerType(), True),
+                        StructField("repeated_guest", IntegerType(), True),
+                        StructField("no_of_previous_cancellations", IntegerType(), True),
+                        StructField("no_of_previous_bookings_not_canceled", IntegerType(), True),
+                        StructField("avg_price_per_room", DoubleType(), True),
+                        StructField("no_of_special_requests", IntegerType(), True),
+                        StructField("type_of_meal_plan", StringType(), True),
+                        StructField("room_type_reserved", StringType(), True),
+                        StructField("market_segment_type", StringType(), True),
+                        StructField("country", StringType(), True),
+                        StructField("arrival_month", IntegerType(), True),
+                        StructField("Client_ID", StringType(), True),
+                        StructField("Booking_ID", StringType(), True),
+                    ]
+                )
+            ),
+            True,
+        )
+    ]
+)
+
+response_schema = StructType(
+    [
+        StructField("Client_ID", StringType(), True),
+        StructField("Proba", DoubleType(), True),
+        StructField("Comment", StringType(), True),
+        StructField(
+            "databricks_output",
+            StructType(
+                [StructField("trace", StringType(), True), StructField("databricks_request_id", StringType(), True)]
+            ),
+            True,
+        ),
+    ]
+)
+
+# COMMAND ----------
+
+df_parsed = inf_table.withColumn("parsed_request", F.from_json(F.col("request"), request_schema))
+df_exploded = df_parsed.withColumn("record", F.explode(F.col("parsed_request.dataframe_records")))
+final_df_with_requests = df_exploded.select(
+    [F.col(f"record.{col.name}").alias(col.name) for col in request_schema["dataframe_records"].dataType.elementType.fields]
+)
+
+# COMMAND ----------
+
+df_parsed = inf_table.withColumn("parsed_response", F.from_json(F.col("response"), response_schema))
+final_df_with_response = df_parsed.select(
+    F.col("parsed_response.Client_ID").alias("Client_ID"),
+    F.col("parsed_response.Proba").alias("Proba"),
+    F.col("parsed_response.Comment").alias("Comment"),
+    F.col("parsed_response.databricks_output.trace").alias("trace"),
+    F.col("parsed_response.databricks_output.databricks_request_id").alias("databricks_request_id")
+)
+
+# COMMAND ----------
+
+main_df = spark.sql(
+    f"SELECT request_date, request_time  FROM mlops_dev.olalubic.`model-serving-payload_payload`"
+)
+
+# COMMAND ----------
+
+from pyspark.sql.functions import monotonically_increasing_id
+
+main_df = main_df.withColumn("row_id", monotonically_increasing_id())
+final_df_with_response = final_df_with_response.withColumn("row_id", monotonically_increasing_id())
+final_df_with_requests = final_df_with_requests.withColumn("row_id", monotonically_increasing_id())
+
+result_df = main_df \
+    .join(final_df_with_response, on="row_id", how="inner") \
+    .join(final_df_with_requests.drop("Client_ID"), on="row_id", how="inner") \
+    .drop("row_id")
+
+# COMMAND ----------
+
+train = spark.sql(
+    f"SELECT Client_ID, booking_status FROM mlops_dev.olalubic.train_set"
+)
+test = spark.sql(
+    f"SELECT Client_ID, booking_status  FROM mlops_dev.olalubic.test_set"
+)
+
+# COMMAND ----------
+
+combined_df = test.unionByName(train)
+
+# COMMAND ----------
+
+result_df = result_df \
+    .join(combined_df, on="Client_ID", how="inner")
+
+# COMMAND ----------
+
+result_df.write.format("delta").mode("append").saveAsTable(
+    f"{config.catalog_name}.{config.schema_name}.model_monitoring"
+)
+
+# COMMAND ----------
+
+
