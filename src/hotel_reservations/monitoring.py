@@ -28,7 +28,7 @@ def create_or_refresh_monitoring(config: ProjectConfig, spark: SparkSession, wor
     """
     tags = Tags(**{"git_sha": "abcd12345", "branch": "week2", "job_run_id": "1234567890"})
     inf_table = spark.sql(
-        f"SELECT * FROM {config.catalog_name}.{config.schema_name}.`model-serving-payload`"
+        f"SELECT * FROM {config.catalog_name}.{config.schema_name}.`model-serving-payload_payload`"
     )
 
     request_schema = StructType(

@@ -48,7 +48,3 @@ alert = w.alerts.create(
 # cleanup
 w.queries.delete(id=query.id)
 w.alerts.delete(id=alert.id)
-
-# COMMAND ----------
-
-
