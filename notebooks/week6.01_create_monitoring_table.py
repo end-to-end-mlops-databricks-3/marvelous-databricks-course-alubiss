@@ -39,25 +39,29 @@ logger.info("Model initialized.")
 # Load data and prepare features
 modeling_ppl.load_data()
 modeling_ppl.prepare_features()
+modeling_ppl.train()
 logger.info("Loaded data, prepared features.")
 
 # COMMAND ----------
-
 
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
-features = modeling_ppl.X_train.copy()
+features = modeling_ppl.pipeline[:-1].transform(modeling_ppl.X_train)
 target = modeling_ppl.y_train.copy()
 
 # Train a Random Forest classifier
 model = RandomForestClassifier(random_state=42)
 model.fit(features, target)
 
+features_array = features
+feature_names = modeling_ppl.preprocessor.get_feature_names_out()
+features_df = pd.DataFrame(features_array, columns=feature_names)
+
 # Identify the most important features
 feature_importances = pd.DataFrame({
-    'Feature': features.columns,
+    'Feature': features_df.columns,
     'Importance': model.feature_importances_
 }).sort_values(by='Importance', ascending=False)
 
@@ -87,9 +91,21 @@ inference_data_skewed_spark = spark.createDataFrame(inference_data_skewed).withC
     "update_timestamp_utc", to_utc_timestamp(current_timestamp(), "UTC")
 )
 
+inference_data_skewed_spark = inference_data_skewed_spark.withColumn("avg_price_per_room", col("avg_price_per_room").cast("float"))
+
 inference_data_skewed_spark.write.mode("overwrite").saveAsTable(
     f"{config.catalog_name}.{config.schema_name}.inference_data_skewed"
 )
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC -- ALTER TABLE mlops_dev.olalubic.hotel_reservations_features SET TBLPROPERTIES
+# MAGIC -- (delta.enableChangeDataFeed = true)
+# MAGIC
+# MAGIC -- VACUUM mlops_dev.olalubic.hotel_reservations_features RETAIN 168 HOURS
+# MAGIC
+# MAGIC -- RESTORE TABLE mlops_dev.olalubic.hotel_reservations_features TO VERSION AS OF 35;
 
 # COMMAND ----------
 
@@ -117,21 +133,13 @@ existing_table = workspace.online_tables.get(online_table_name)
 logger.info("Online table already exists. Inititating table update.")
 pipeline_id = existing_table.spec.pipeline_id
 update_response = workspace.pipelines.start_update(pipeline_id=pipeline_id, full_refresh=False)
-update_response = workspace.pipelines.start_update(
-    pipeline_id=pipeline_id, full_refresh=False)
-while True:
-    update_info = workspace.pipelines.get_update(pipeline_id=pipeline_id, 
-                            update_id=update_response.update_id)
-    state = update_info.update.state.value
-    if state == 'COMPLETED':
-        break
-    elif state in ['FAILED', 'CANCELED']:
-        raise SystemError("Online table failed to update.")
-    elif state == 'WAITING_FOR_RESOURCES':
-        print("Pipeline is waiting for resources.")
-    else:
-        print(f"Pipeline is in {state} state.")
-    time.sleep(30)
+
+# COMMAND ----------
+
+update_info = workspace.pipelines.get_update(pipeline_id=pipeline_id, 
+                        update_id=update_response.update_id)
+state = update_info.update.state.value
+print(state)
 
 # COMMAND ----------
 
@@ -153,7 +161,7 @@ from hotel_reservations.config import ProjectConfig
 spark = SparkSession.builder.getOrCreate()
 
 # Load configuration
-config = ProjectConfig.from_yaml(config_path="project_config.yml", env="dev")
+config = ProjectConfig.from_yaml(config_path="../project_config.yml", env="dev")
 
 test_set = modeling_ppl.X_test.copy()
 
@@ -161,11 +169,6 @@ inference_data_skewed = spark.table(f"{config.catalog_name}.{config.schema_name}
                         .withColumn("Client_ID", col("Client_ID").cast("string")) \
                         .toPandas()
 inference_data_skewed = inference_data_skewed.drop(columns=["update_timestamp_utc"], errors="ignore")
-inference_data_skewed = inference_data_skewed[
-            modeling_ppl.num_features + modeling_ppl.cat_features + modeling_ppl.date_features + ["Client_ID", "Booking_ID"]
-        ]
-inference_data_skewed = modeling_ppl.pipeline[:-1].transform(inference_data_skewed)
-
 
 # COMMAND ----------
 
@@ -174,16 +177,21 @@ host = spark.conf.get("spark.databricks.workspaceUrl")
 
 # COMMAND ----------
 
-
 from databricks.sdk import WorkspaceClient
 import requests
 import time
 
 workspace = WorkspaceClient()
 
+inference_data_skewed = inference_data_skewed.sort_values(by="Client_ID").reset_index(drop=True)
+test_set = test_set.sort_values(by="Client_ID").reset_index(drop=True)
+
+inference_data_skewed2 = inference_data_skewed.head(10)
+test_set2 = test_set.head(10)
+
 # Sample records from inference datasets
-sampled_skewed_records = inference_data_skewed.to_dict(orient="records")
-test_set_records = test_set.to_dict(orient="records")
+sampled_skewed_records = inference_data_skewed2.to_dict(orient="records")
+test_set_records = test_set2.to_dict(orient="records")
 
 # COMMAND ----------
 
@@ -232,11 +240,6 @@ for index, record in enumerate(itertools.cycle(sampled_skewed_records)):
     print(f"Response status: {response.status_code}")
     print(f"Response text: {response.text}")
     time.sleep(0.2)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC
 
 # COMMAND ----------
 
