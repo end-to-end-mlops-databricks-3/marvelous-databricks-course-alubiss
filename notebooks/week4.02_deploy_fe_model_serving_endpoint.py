@@ -117,5 +117,3 @@ for i in range(len(dataframe_records)):
     time.sleep(0.2)
 
 # COMMAND ----------
-
-
