@@ -115,3 +115,7 @@ for i in range(len(dataframe_records)):
     print(f"Response Status: {status_code}")
     print(f"Response Text: {response_text}")
     time.sleep(0.2)
+
+# COMMAND ----------
+
+
