@@ -20,7 +20,7 @@ MODEL_URI = "models:/mlops_dev.olalubic.hotel_reservations_model_custom@latest-m
 
 # Trick to ensure DATABRICKS_HOST is set with 'https://' prefix."""
 raw_host = os.environ["DATABRICKS_HOST"]
-host = raw_host if raw_host.startswith("https://") else f"https://{raw_host}"
+host = f"https://{raw_host}"
 
 
 def get_token() -> str:
