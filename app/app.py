@@ -29,7 +29,7 @@ def get_token() -> str:
     :return: The access token string.
     """
     response = requests.post(
-        f"https://{host}/oidc/v1/token",
+        f"{host}/oidc/v1/token",
         auth=HTTPBasicAuth(os.environ["DATABRICKS_CLIENT_ID"], os.environ["DATABRICKS_CLIENT_SECRET"]),
         data={"grant_type": "client_credentials", "scope": "all-apis"},
     )
