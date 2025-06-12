@@ -187,7 +187,7 @@ inference_data_skewed = inference_data_skewed.sort_values(by="Client_ID").reset_
 test_set = test_set.sort_values(by="Client_ID").reset_index(drop=True)
 
 inference_data_skewed2 = inference_data_skewed.head(10)
-test_set2 = test_set.head(10)
+test_set2 = test_set[test_set["Client_ID"].isin(['95890', '42942', '59530', '67761', '50264', '30130', '47704', '78754', '86194', '86480'])]
 
 # Sample records from inference datasets
 sampled_skewed_records = inference_data_skewed2.to_dict(orient="records")
@@ -213,6 +213,15 @@ def send_request_workspace(dataframe_record):
         dataframe_records=[dataframe_record]
     )
     return response
+
+# COMMAND ----------
+
+for index, record in enumerate(test_set_records):
+    print(f"Sending request for test data, index {index}")
+    response = send_request_https(record)
+    print(f"Response status: {response.status_code}")
+    print(f"Response text: {response.text}")
+    time.sleep(0.2)
 
 # COMMAND ----------
 
@@ -264,13 +273,6 @@ create_or_refresh_monitoring(config=config, spark=spark, workspace=workspace)
 
 # COMMAND ----------
 
-tags = Tags(**{"git_sha": "abcd12345", "branch": "week2", "job_run_id": "1234567890"})
-inf_table = spark.sql(
-    f"SELECT * FROM mlops_dev.olalubic.`model-serving-payload_payload`"
-)
-
-# COMMAND ----------
-
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.errors import NotFound
 from databricks.sdk.service.catalog import (
@@ -285,9 +287,12 @@ from pyspark.sql.types import ArrayType, DoubleType, IntegerType, StringType, St
 from hotel_reservations.config import ProjectConfig, Tags
 from hotel_reservations.models.modeling_pipeline import PocessModeling
 
-# COMMAND ----------
-
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, ArrayType
+
+tags = Tags(**{"git_sha": "abcd12345", "branch": "week2", "job_run_id": "1234567890"})
+inf_table = spark.sql(
+    f"SELECT * FROM mlops_dev.olalubic.`model-serving-payload_payload`"
+)
 
 request_schema = StructType(
     [
@@ -337,7 +342,6 @@ response_schema = StructType(
     ]
 )
 
-# COMMAND ----------
 
 df_parsed = inf_table.withColumn("parsed_request", F.from_json(F.col("request"), request_schema))
 df_exploded = df_parsed.withColumn("record", F.explode(F.col("parsed_request.dataframe_records")))
@@ -345,7 +349,6 @@ final_df_with_requests = df_exploded.select(
     [F.col(f"record.{col.name}").alias(col.name) for col in request_schema["dataframe_records"].dataType.elementType.fields]
 )
 
-# COMMAND ----------
 
 df_parsed = inf_table.withColumn("parsed_response", F.from_json(F.col("response"), response_schema))
 final_df_with_response = df_parsed.select(
@@ -356,11 +359,17 @@ final_df_with_response = df_parsed.select(
     F.col("parsed_response.databricks_output.databricks_request_id").alias("databricks_request_id")
 )
 
-# COMMAND ----------
 
 main_df = spark.sql(
     f"SELECT request_date, request_time  FROM mlops_dev.olalubic.`model-serving-payload_payload`"
 )
+
+
+# COMMAND ----------
+
+spark.sql(
+    f"SELECT max(request_time)  FROM mlops_dev.olalubic.`model-serving-payload_payload`"
+).show()
 
 # COMMAND ----------
 
@@ -377,14 +386,16 @@ result_df = main_df \
 
 # COMMAND ----------
 
+result_df.count()
+
+# COMMAND ----------
+
 train = spark.sql(
     f"SELECT Client_ID, booking_status FROM mlops_dev.olalubic.train_set"
 )
 test = spark.sql(
     f"SELECT Client_ID, booking_status  FROM mlops_dev.olalubic.test_set"
 )
-
-# COMMAND ----------
 
 combined_df = test.unionByName(train)
 
@@ -395,10 +406,10 @@ result_df = result_df \
 
 # COMMAND ----------
 
-result_df.write.format("delta").mode("append").saveAsTable(
-    f"{config.catalog_name}.{config.schema_name}.model_monitoring"
-)
+result_df.count()
 
 # COMMAND ----------
 
-
+result_df.write.format("delta").mode("append").saveAsTable(
+    f"{config.catalog_name}.{config.schema_name}.model_monitoring"
+)
