@@ -126,7 +126,7 @@ spark.sql(f"""
     SELECT Client_ID, repeated_guest, no_of_previous_cancellations, no_of_previous_bookings_not_canceled, avg_price_per_room, no_of_special_requests
     FROM {config.catalog_name}.{config.schema_name}.inference_data_skewed
 """)
-  
+
 online_table_name = f"{config.catalog_name}.{config.schema_name}.hotel_reservations_features_online"
 
 existing_table = workspace.online_tables.get(online_table_name)
@@ -136,7 +136,7 @@ update_response = workspace.pipelines.start_update(pipeline_id=pipeline_id, full
 
 # COMMAND ----------
 
-update_info = workspace.pipelines.get_update(pipeline_id=pipeline_id, 
+update_info = workspace.pipelines.get_update(pipeline_id=pipeline_id,
                         update_id=update_response.update_id)
 state = update_info.update.state.value
 print(state)

@@ -18,7 +18,7 @@ srcs = w.data_sources.list()
 
 
 alert_query = """
-SELECT 
+SELECT
   (COUNT(CASE WHEN booking_status = 'Canceled' THEN 1 END) * 100.0 / COUNT(CASE WHEN booking_status IS NOT NULL THEN 1 END)) AS percentage_canceled
 FROM mlops_dev.olalubic.test_set
 """

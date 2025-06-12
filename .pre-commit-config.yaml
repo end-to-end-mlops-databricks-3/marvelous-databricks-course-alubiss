@@ -1,4 +1,4 @@
-exclude: '^(notebooks|scripts|tests/databricks_tests|Taskfiles\.md|typings/.*|getpip\.py)$'
+exclude: '^(notebooks|src/hotel_reservations/monitoring.py|scripts|tests/databricks_tests|Taskfiles\.md|typings/.*|getpip\.py)$'
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0

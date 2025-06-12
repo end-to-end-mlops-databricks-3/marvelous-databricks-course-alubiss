@@ -176,9 +176,8 @@ def generate_synthetic_data(df: pd.DataFrame, drift: bool = False, num_rows: int
         # Skew the top features to introduce drift
         top_features = [
             "lead_time",
-            "avg_price_per_room,"
-            "no_of_special_requests",
-            "no_of_week_nights"
+            "avg_price_per_room,no_of_special_requests",
+            "no_of_week_nights",
         ]  # Select top features
         for feature in top_features:
             if feature in synthetic_data.columns:
