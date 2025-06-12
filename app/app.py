@@ -16,7 +16,7 @@ st.set_page_config(
 
 
 # Specify your Unity Catalog model path (update with your actual catalog, schema, model, and alias/version)
-MODEL_URI = "mlops_dev.olalubic.hotel_reservations_model_custom@latest-model"
+MODEL_URI = "models:/mlops_dev.olalubic.hotel_reservations_model_custom@latest-model"
 
 # Trick to ensure DATABRICKS_HOST is set with 'https://' prefix."""
 raw_host = os.environ["DATABRICKS_HOST"]
