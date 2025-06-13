@@ -20,8 +20,8 @@ MODEL_URI = "models:/mlops_dev.olalubic.hotel_reservations_model_custom@latest-m
 # MODEL_URI = "https://dbc-c2e8445d-159d.cloud.databricks.com/explore/data/models/mlops_dev/olalubic/hotel_reservations_model_custom"
 
 # Trick to ensure DATABRICKS_HOST is set with 'https://' prefix."""
-# raw_host = os.environ["DATABRICKS_HOST"]
-# host = raw_host if raw_host.startswith("https://") else f"https://{raw_host}"
+raw_host = os.environ["DATABRICKS_HOST"]
+host = raw_host if raw_host.startswith("https://") else f"https://{raw_host}"
 mlflow.set_registry_uri("databricks-uc")
 os.environ["DATABRICKS_HOST"] = "https://dbc-c2e8445d-159d.cloud.databricks.com"
 
