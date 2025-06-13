@@ -19,8 +19,8 @@ st.set_page_config(
 MODEL_URI = "models:/mlops_dev.olalubic.hotel_reservations_model_custom@latest-model"
 
 # Trick to ensure DATABRICKS_HOST is set with 'https://' prefix."""
-#raw_host = os.environ["DATABRICKS_HOST"]
-host = "https://dbc-c2e8445d-159d.cloud.databricks.com"
+raw_host = os.environ["DATABRICKS_HOST"]
+host = raw_host if raw_host.startswith("https://") else f"https://{raw_host}"
 
 
 def get_token() -> str:
