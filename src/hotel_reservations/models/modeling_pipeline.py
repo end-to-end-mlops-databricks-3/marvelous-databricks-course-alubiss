@@ -133,6 +133,7 @@ class PocessModeling:
         self.code_paths = code_paths
         self.banned_clients_ids = self.config.banned_clients_ids
         self.banned_client_path = f"/Volumes/{self.catalog_name}/{self.schema_name}/alubiss/banned_client_list.csv"
+        self.model_name = "hotel_reservations_model_custom"
 
     def load_data(self) -> None:
         """Load training and testing data from Delta tables.
@@ -334,7 +335,7 @@ class PocessModeling:
 
             mlflow.pyfunc.log_model(
                 python_model=ModelWrapper(self.pipeline),
-                artifact_path="pyfunc-alubiss-model",
+                artifact_path=f"pyfunc-alubiss-{self.model_name}",
                 artifacts={"banned_client_list": self.banned_client_path},
                 code_paths=self.code_paths,
                 conda_env=conda_env,
@@ -349,8 +350,8 @@ class PocessModeling:
         """
         logger.info("🔄 Registering the model in UC...")
         registered_model = mlflow.register_model(
-            model_uri=f"runs:/{self.run_id}/pyfunc-alubiss-model",
-            name=f"{self.catalog_name}.{self.schema_name}.hotel_reservations_model_custom",
+            model_uri=f"runs:/{self.run_id}/pyfunc-alubiss-{self.model_name}",
+            name=f"{self.catalog_name}.{self.schema_name}.{self.model_name}",
             tags=self.tags,
         )
         logger.info(f"✅ Model registered as version {registered_model.version}.")
@@ -359,10 +360,11 @@ class PocessModeling:
 
         client = MlflowClient()
         client.set_registered_model_alias(
-            name=f"{self.catalog_name}.{self.schema_name}.hotel_reservations_model_custom",
+            name=f"{self.catalog_name}.{self.schema_name}.{self.model_name}",
             alias="latest-model",
             version=latest_version,
         )
+        return latest_version
 
     def retrieve_current_run_dataset(self) -> DatasetSource:
         """Retrieve the dataset used in the current MLflow run.
@@ -403,7 +405,7 @@ class PocessModeling:
         """
         logger.info("🔄 Loading model from MLflow alias 'production'...")
 
-        model_uri = f"models:/{self.catalog_name}.{self.schema_name}.hotel_reservations_model_custom@latest-model"
+        model_uri = f"models:/{self.catalog_name}.{self.schema_name}.{self.model_name}@latest-model"
         model = mlflow.pyfunc.load_model(model_uri)
 
         logger.info("✅ Model successfully loaded.")
@@ -413,3 +415,60 @@ class PocessModeling:
 
         # Return predictions as a DataFrame
         return predictions
+
+    def model_improved(self, test_set: pd.DataFrame) -> bool:
+        """Evaluate the model performance on the test set using classification metrics.
+
+        Compares the current model with the latest registered model using accuracy and F1 score.
+        :param test_set: DataFrame containing the test data (must include target column).
+        :return: True if the current model performs better, False otherwise.
+        """
+        from sklearn.metrics import accuracy_score, f1_score
+
+        # Prepare test features and true labels
+        y_true = test_set[self.config.target].map({"Not_Canceled": 0, "Canceled": 1})
+        X_test = test_set.drop(columns=[self.config.target])
+
+        cols_types = {
+            "required_car_parking_space": "int32",
+            "no_of_adults": "int32",
+            "no_of_children": "int32",
+            "no_of_weekend_nights": "int32",
+            "no_of_week_nights": "int32",
+            "lead_time": "int32",
+            "repeated_guest": "int32",
+            "no_of_previous_cancellations": "int32",
+            "no_of_previous_bookings_not_canceled": "int32",
+            "avg_price_per_room": "float32",
+            "no_of_special_requests": "int32",
+            "arrival_month": "int32",
+        }
+
+        X_test = X_test.astype(cols_types)
+
+        # Get predictions from the latest registered model
+        predictions_latest = self.load_latest_model_and_predict(X_test)
+        y_pred_latest = (predictions_latest["Proba"] >= 0.5).astype(int)
+
+        # Get predictions from the current model
+        current_model_uri = f"runs:/{self.run_id}/pyfunc-alubiss-{self.model_name}"
+        current_model = mlflow.pyfunc.load_model(current_model_uri)
+        predictions_current = current_model.predict(X_test)
+        y_pred_current = (predictions_current["Proba"] >= 0.5).astype(int)
+
+        # Calculate classification metrics
+        acc_latest = accuracy_score(y_true, y_pred_latest)
+        f1_latest = f1_score(y_true, y_pred_latest)
+        acc_current = accuracy_score(y_true, y_pred_current)
+        f1_current = f1_score(y_true, y_pred_current)
+
+        logger.info(f"Accuracy (Current): {acc_current}, F1 (Current): {f1_current}")
+        logger.info(f"Accuracy (Latest): {acc_latest}, F1 (Latest): {f1_latest}")
+
+        # Compare models based on F1 score
+        if f1_current > f1_latest:
+            logger.info("Current model performs better.")
+            return True
+        else:
+            logger.info("Current model performs worse or equal.")
+            return False
