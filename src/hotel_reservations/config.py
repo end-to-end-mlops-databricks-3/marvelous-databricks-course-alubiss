@@ -22,7 +22,9 @@ class ProjectConfig(BaseModel):
     schema_name: str
     parameters: dict[str, Any]
     hyperparameters_tuning: bool
+    experiment_name_basic: str
     experiment_name_custom: str
+    experiment_name_fe: str
     banned_clients_ids: list[str]
 
     @classmethod

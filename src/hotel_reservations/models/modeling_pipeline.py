@@ -133,6 +133,7 @@ class PocessModeling:
         self.code_paths = code_paths
         self.banned_clients_ids = self.config.banned_clients_ids
         self.banned_client_path = f"/Volumes/{self.catalog_name}/{self.schema_name}/alubiss/banned_client_list.csv"
+        self.model_name = "hotel_reservations_model_custom"
 
     def load_data(self) -> None:
         """Load training and testing data from Delta tables.
@@ -334,7 +335,7 @@ class PocessModeling:
 
             mlflow.pyfunc.log_model(
                 python_model=ModelWrapper(self.pipeline),
-                artifact_path="pyfunc-alubiss-model",
+                artifact_path=f"pyfunc-alubiss-{self.model_name}",
                 artifacts={"banned_client_list": self.banned_client_path},
                 code_paths=self.code_paths,
                 conda_env=conda_env,
@@ -349,8 +350,8 @@ class PocessModeling:
         """
         logger.info("🔄 Registering the model in UC...")
         registered_model = mlflow.register_model(
-            model_uri=f"runs:/{self.run_id}/pyfunc-alubiss-model",
-            name=f"{self.catalog_name}.{self.schema_name}.hotel_reservations_model_custom",
+            model_uri=f"runs:/{self.run_id}/pyfunc-alubiss-{self.model_name}",
+            name=f"{self.catalog_name}.{self.schema_name}.{self.model_name}",
             tags=self.tags,
         )
         logger.info(f"✅ Model registered as version {registered_model.version}.")
@@ -359,7 +360,7 @@ class PocessModeling:
 
         client = MlflowClient()
         client.set_registered_model_alias(
-            name=f"{self.catalog_name}.{self.schema_name}.hotel_reservations_model_custom",
+            name=f"{self.catalog_name}.{self.schema_name}.{self.model_name}",
             alias="latest-model",
             version=latest_version,
         )
@@ -403,7 +404,7 @@ class PocessModeling:
         """
         logger.info("🔄 Loading model from MLflow alias 'production'...")
 
-        model_uri = f"models:/{self.catalog_name}.{self.schema_name}.hotel_reservations_model_custom@latest-model"
+        model_uri = f"models:/{self.catalog_name}.{self.schema_name}.{self.model_name}@latest-model"
         model = mlflow.pyfunc.load_model(model_uri)
 
         logger.info("✅ Model successfully loaded.")
