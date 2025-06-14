@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install ../dist/hotel_reservations-0.1.12-py3-none-any.whl
+# MAGIC %pip install ../dist/hotel_reservations-0.1.13-py3-none-any.whl
 
 # COMMAND ----------
 
@@ -115,3 +115,5 @@ for i in range(len(dataframe_records)):
     print(f"Response Status: {status_code}")
     print(f"Response Text: {response_text}")
     time.sleep(0.2)
+
+# COMMAND ----------
