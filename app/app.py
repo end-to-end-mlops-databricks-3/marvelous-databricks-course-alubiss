@@ -16,7 +16,7 @@ st.set_page_config(
 
 
 # Specify your Unity Catalog model path (update with your actual catalog, schema, model, and alias/version)
-MODEL_URI = "models:/mlops_dev.olalubic.hotel_reservations_model_custom@latest-model"
+MODEL_URI = "models:/mlops_dev.olalubic.model_basic_new@latest-model"
 # MODEL_URI = "https://dbc-c2e8445d-159d.cloud.databricks.com/explore/data/models/mlops_dev/olalubic/hotel_reservations_model_custom"
 
 # Trick to ensure DATABRICKS_HOST is set with 'https://' prefix."""
@@ -136,8 +136,25 @@ input_df = pd.DataFrame(
     ],
 )
 
+cols_types = {
+    "required_car_parking_space": "int32",
+    "no_of_adults": "int32",
+    "no_of_children": "int32",
+    "no_of_weekend_nights": "int32",
+    "no_of_week_nights": "int32",
+    "lead_time": "int32",
+    "repeated_guest": "int32",
+    "no_of_previous_cancellations": "int32",
+    "no_of_previous_bookings_not_canceled": "int32",
+    "avg_price_per_room": "float32",
+    "no_of_special_requests": "int32",
+    "arrival_month": "int32"
+}
+
+input_df = input_df.astype(cols_types)
+
 # --- PREDICTION BUTTON ---
 st.markdown("---")
 if st.button("🔮 Predict Hotel Reservation"):
     prediction = model.predict(input_df)
-    st.success(f"🏷️ Prediction: ${prediction[0]:,}")
+    st.success(f"🏷️ Prediction: {prediction[0]:,}")
