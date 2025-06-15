@@ -35,13 +35,14 @@ class ModelServing:
         return latest_version
 
     def deploy_or_update_serving_endpoint(
-        self, version: str = "latest", workload_size: str = "Small", scale_to_zero: bool = True
+        self, version: str = "latest", workload_size: str = "Small", scale_to_zero: bool = True, wait: bool = False
     ) -> None:
         """Deploy or update the model serving endpoint in Databricks.
 
-        :param version: Version of the model to deploy, defaults to "latest"
-        :param workload_size: Workload size (number of concurrent requests), defaults to "Small"
-        :param scale_to_zero: If True, endpoint scales to 0 when unused, defaults to True
+        :param version: Version of the model to deploy
+        :param workload_size: Workload size (number of concurrent requests). Default is Small = 4 concurrent requests.
+        :param scale_to_zero: If True, endpoint scales to 0 when unused
+        :param wait: If True, the job will wait for the endpoint creation/update to finish
         """
         endpoint_exists = any(item.name == self.endpoint_name for item in self.workspace.serving_endpoints.list())
         entity_version = self.get_latest_model_version() if version == "latest" else version
@@ -56,11 +57,28 @@ class ModelServing:
         ]
 
         if not endpoint_exists:
-            self.workspace.serving_endpoints.create(
-                name=self.endpoint_name,
-                config=EndpointCoreConfigInput(
-                    served_entities=served_entities,
-                ),
-            )
+            if wait:
+                self.workspace.serving_endpoints.create_and_wait(
+                    name=self.endpoint_name,
+                    config=EndpointCoreConfigInput(
+                        served_entities=served_entities,
+                    ),
+                )
+            else:
+                self.workspace.serving_endpoints.create(
+                    name=self.endpoint_name,
+                    config=EndpointCoreConfigInput(
+                        served_entities=served_entities,
+                    ),
+                )
         else:
-            self.workspace.serving_endpoints.update_config(name=self.endpoint_name, served_entities=served_entities)
+            if wait:
+                self.workspace.serving_endpoints.update_config_and_wait(
+                    name=self.endpoint_name,
+                    served_entities=served_entities,
+                )
+            else:
+                self.workspace.serving_endpoints.update_config(
+                    name=self.endpoint_name,
+                    served_entities=served_entities,
+                )
