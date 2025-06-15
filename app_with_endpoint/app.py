@@ -14,11 +14,6 @@ st.set_page_config(
     layout="wide",
 )
 
-
-# Specify your Unity Catalog model path (update with your actual catalog, schema, model, and alias/version)
-MODEL_URI = "models:/mlops_dev.olalubic.model_basic_new@latest-model"
-# MODEL_URI = "https://dbc-c2e8445d-159d.cloud.databricks.com/explore/data/models/mlops_dev/olalubic/hotel_reservations_model_custom"
-
 # Trick to ensure DATABRICKS_HOST is set with 'https://' prefix."""
 raw_host = os.environ["DATABRICKS_HOST"]
 host = raw_host if raw_host.startswith("https://") else f"https://{raw_host}"
@@ -47,9 +42,6 @@ def load_uc_model() -> PyFuncModel:
     :return: The loaded MLflow PyFuncModel.
     """
     return mlflow.pyfunc.load_model(MODEL_URI)
-
-
-# model = load_uc_model()
 
 # --- SIDEBAR ---
 with st.sidebar:
