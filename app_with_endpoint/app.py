@@ -25,6 +25,7 @@ host = raw_host if raw_host.startswith("https://") else f"https://{raw_host}"
 mlflow.set_registry_uri("databricks-uc")
 os.environ["DATABRICKS_HOST"] = "https://dbc-c2e8445d-159d.cloud.databricks.com"
 
+
 def get_token() -> str:
     """Retrieves an OAuth access token from the Databricks workspace.
 
@@ -38,7 +39,9 @@ def get_token() -> str:
 
     return response.json()["access_token"]
 
+
 os.environ["DATABRICKS_TOKEN"] = get_token()
+
 
 @st.cache_resource
 def load_uc_model() -> PyFuncModel:
@@ -148,12 +151,13 @@ cols_types = {
     "no_of_previous_bookings_not_canceled": "int32",
     "avg_price_per_room": "float32",
     "no_of_special_requests": "int32",
-    "arrival_month": "int32"
+    "arrival_month": "int32",
 }
 
 input_df = input_df.astype(cols_types)
 input_df = input_df.reset_index(drop=True)
 input_records = input_df.to_dict(orient="records")
+
 
 def send_request_https(dataframe_record):
     model_serving_endpoint = f"{host}/serving-endpoints/alubiss-custom-hotel-reservations-model-serving/invocations"
@@ -164,6 +168,7 @@ def send_request_https(dataframe_record):
         json={"dataframe_records": [dataframe_record]},
     )
     return response
+
 
 # --- PREDICTION BUTTON ---
 st.markdown("---")
