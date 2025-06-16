@@ -188,7 +188,7 @@ targets:
 
   acc:
     presets:
-      name_prefix: 'acc_'
+      name_prefix: 'acceptance_'
     workspace:
       host: https://dbc-c2e8445d-159d.cloud.databricks.com
       root_path: /Shared/.bundle/${bundle.target}/${bundle.name}
