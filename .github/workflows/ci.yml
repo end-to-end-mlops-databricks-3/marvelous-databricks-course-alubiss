@@ -80,16 +80,15 @@ jobs:
           RAW_VERSION=$(cat version.txt)
           PACKAGE_VERSION=$(echo "$RAW_VERSION" | tr -d '.')
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
-
-      - name: Debug package version
-        run: echo "PACKAGE_VERSION=${{ env.PACKAGE_VERSION }}"
+          echo "::set-output name=PACKAGE_VERSION::$PACKAGE_VERSION"
 
       - name: Deploy to Databricks
         env:
           DATABRICKS_BUNDLE_ENV: test
+          BUNDLE_VAR_package_version: ${{ steps.read_version.outputs.PACKAGE_VERSION }}
         run: |
             full_repo="${{ github.repository }}"
             repo_name="${full_repo##*/}"
             org_name="${full_repo%%/*}"
-            databricks bundle deploy --var="git_sha=${{ github.sha }}" --var="repo=${repo_name}" --var="org=${org_name}" --var="branch=${{ github.ref_name }}" --var="package_version=${{ env.PACKAGE_VERSION }}"
+            databricks bundle deploy --var="git_sha=${{ github.sha }}" --var="repo=${repo_name}" --var="org=${org_name}" --var="branch=${{ github.ref_name }}"
             databricks bundle run deployment --no-wait

@@ -51,15 +51,14 @@ jobs:
           RAW_VERSION=$(cat version.txt)
           PACKAGE_VERSION=$(echo "$RAW_VERSION" | tr -d '.')
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
-
-      - name: Debug package version
-        run: echo "PACKAGE_VERSION=${{ env.PACKAGE_VERSION }}"
+          echo "::set-output name=PACKAGE_VERSION::$PACKAGE_VERSION"
 
       - name: Deploy to Databricks
         env:
           DATABRICKS_BUNDLE_ENV: ${{ matrix.environment }}
+          BUNDLE_VAR_package_version: ${{ steps.read_version.outputs.PACKAGE_VERSION }}
         run: |
-            databricks bundle deploy --var="git_sha=${{ github.sha }}" --var="package_version=${{ env.PACKAGE_VERSION }}"
+            databricks bundle deploy --var="git_sha=${{ github.sha }}"
             if [ "${{ matrix.environment }}" = "prd" ]; then
             echo "VERSION=$(cat version.txt)"
             git tag $VERSION
