@@ -7,7 +7,7 @@ bundle:
 
 include:
   - bundle_monitoring.yml
-  - resources/*.yml
+  # - resources/*.yml
 
 artifacts:
   default:
@@ -47,9 +47,6 @@ resources:
   jobs:
     deployment:
       name: ${bundle.name}-workflow
-      # email_notifications:
-      #     on_failure:
-      #       - example@example.com
       schedule:
         quartz_cron_expression: "0 0 6 ? * MON"
         timezone_id: "Europe/Amsterdam"
@@ -68,7 +65,6 @@ resources:
               max_workers: 1
             spark_env_vars:
               "TOKEN_STATUS_CHECK": "{{secrets/mlops_course/git_token_status_check}}"
-
       tasks:
         - task_key: "preprocessing"
           job_cluster_key: "hotel-reservations-cluster"
@@ -83,8 +79,8 @@ resources:
               - "--is_test"
               - "${var.is_test}"
           libraries:
-           - whl: ./dist/*.whl
-           - whl: /Volumes/mlops_prd/utils/package/marvelous-${var.marvelous_version}-py3-none-any.whl
+            - whl: ./dist/*.whl
+            - whl: /Volumes/mlops_prd/utils/package/marvelous-${var.marvelous_version}-py3-none-any.whl
         - task_key: "train_model"
           job_cluster_key: "hotel-reservations-cluster"
           depends_on:
@@ -163,6 +159,12 @@ resources:
             - whl: ./dist/*.whl
             - whl: /Volumes/mlops_prd/utils/package/marvelous-${var.marvelous_version}-py3-none-any.whl
 
+  apps:
+    inference_app:
+      name: "test-${var.package_version}"
+      source_code_path: ./app
+      description: "A Streamlit app for ML inference on Databricks"
+
 targets:
   dev:
     cluster_id: 0507-194506-ye56mzn8 #replace with your own!
@@ -204,7 +206,6 @@ targets:
       is_test: 1
       env: acc
 
-
   prd:
     mode: production
     workspace:
@@ -215,8 +216,7 @@ targets:
       is_test: 0
       env: prd
 
-  ## Optionally, there could be 'staging' or 'prod' targets here.
-  #
-  # prod:
-  #   workspace:
-  #     host: https://dbc-c2e8445d-159d.cloud.databricks.com
+# Optionally, there could be 'staging' or 'prod' targets here.
+# prod:
+#   workspace:
+#     host: https://dbc-c2e8445d-159d.cloud.databricks.com
