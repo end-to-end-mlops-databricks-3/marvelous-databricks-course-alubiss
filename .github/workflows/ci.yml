@@ -74,6 +74,13 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 #v5.4.1
 
+      - name: Read version from file
+        id: read_version
+        run: |
+          RAW_VERSION=$(cat version.txt)
+          PACKAGE_VERSION=$(echo "$RAW_VERSION" | tr -d '.')
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+
       - name: Deploy to Databricks
         env:
           DATABRICKS_BUNDLE_ENV: test
@@ -81,5 +88,5 @@ jobs:
             full_repo="${{ github.repository }}"
             repo_name="${full_repo##*/}"
             org_name="${full_repo%%/*}"
-            databricks bundle deploy --var="git_sha=${{ github.sha }}" --var="repo=${repo_name}" --var="org=${org_name}"
+            databricks bundle deploy --var="git_sha=${{ github.sha }}" --var="repo=${repo_name}" --var="org=${org_name}" --var="branch=${{ github.ref_name }}" --var="package_version=${{ env.PACKAGE_VERSION }}"
             databricks bundle run deployment --no-wait
