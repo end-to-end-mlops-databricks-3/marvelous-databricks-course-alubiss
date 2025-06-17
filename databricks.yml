@@ -160,21 +160,21 @@ resources:
             - whl: ./dist/*.whl
             - whl: /Volumes/mlops_prd/utils/package/marvelous-${var.marvelous_version}-py3-none-any.whl
 
-    new_job:
-      name: ${bundle.name}-new-job-${var.branch}
-      tasks:
-      - task_key: Prep_models
-        for_each_task:
-          inputs: '[1, 0]'
-          concurrency: 2
-          task:
-            task_key: Prep_models_iteration
-            run_job_task:
-              job_id: 538670860073525
-              job_parameters:
-                is_test: "{{input}}"
-      queue:
-        enabled: true
+    # new_job:
+    #   name: ${bundle.name}-new-job-${var.branch}
+    #   tasks:
+    #   - task_key: Prep_models
+    #     for_each_task:
+    #       inputs: '[1, 0]'
+    #       concurrency: 2
+    #       task:
+    #         task_key: Prep_models_iteration
+    #         run_job_task:
+    #           job_id: 538670860073525
+    #           job_parameters:
+    #             is_test: "{{input}}"
+    #   queue:
+    #     enabled: true
 
   apps:
     inference_app:
