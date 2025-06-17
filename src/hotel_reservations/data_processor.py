@@ -76,6 +76,28 @@ class DataProcessor:
             f"{self.config.catalog_name}.{self.config.schema_name}.test_set"
         )
 
+    def save_by_country(self, train_set: pd.DataFrame, test_set: pd.DataFrame, country: str) -> None:
+        """Save the train and test sets into Databricks tables.
+
+        :param train_set: The training DataFrame to be saved.
+        :param test_set: The test DataFrame to be saved.
+        """
+        train_set_with_timestamp = self.spark.createDataFrame(train_set).withColumn(
+            "update_timestamp_utc", to_utc_timestamp(current_timestamp(), "UTC")
+        )
+
+        test_set_with_timestamp = self.spark.createDataFrame(test_set).withColumn(
+            "update_timestamp_utc", to_utc_timestamp(current_timestamp(), "UTC")
+        )
+
+        train_set_with_timestamp.write.mode("append").saveAsTable(
+            f"{self.config.catalog_name}.{self.config.schema_name}.train_set_{country}"
+        )
+
+        test_set_with_timestamp.write.mode("append").saveAsTable(
+            f"{self.config.catalog_name}.{self.config.schema_name}.test_set_{country}"
+        )
+
     def enable_change_data_feed(self) -> None:
         """Enable Change Data Feed for train and test set tables.
 
@@ -175,10 +197,10 @@ def generate_synthetic_data(df: pd.DataFrame, drift: bool = False, num_rows: int
     if drift:
         # Skew the top features to introduce drift
         top_features = [
-            "repeated_guest",
-            "no_of_previous_cancellations",
-            "no_of_previous_bookings_not_canceled",
-        ]  # Select top 2 features
+            "lead_time",
+            "avg_price_per_room,no_of_special_requests",
+            "no_of_week_nights",
+        ]  # Select top features
         for feature in top_features:
             if feature in synthetic_data.columns:
                 synthetic_data[feature] = synthetic_data[feature] * 2
