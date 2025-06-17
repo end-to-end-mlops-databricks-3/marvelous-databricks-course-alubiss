@@ -52,6 +52,9 @@ jobs:
           PACKAGE_VERSION=$(echo "$RAW_VERSION" | tr -d '.')
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
 
+      - name: Debug package version
+        run: echo "PACKAGE_VERSION=${{ env.PACKAGE_VERSION }}"
+
       - name: Deploy to Databricks
         env:
           DATABRICKS_BUNDLE_ENV: ${{ matrix.environment }}
