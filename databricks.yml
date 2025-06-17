@@ -172,6 +172,7 @@ targets:
       schedule_pause_status: PAUSED
       is_test: 1
       env: dev
+      branch: ${env.GIT_BRANCH}
     artifacts:
       default:
         type: whl
