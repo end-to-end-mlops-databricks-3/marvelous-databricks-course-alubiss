@@ -27,6 +27,7 @@ variables:
     default: end-to-end-mlops-databricks-3
   branch:
     description: branch
+    default: main
   schedule_pause_status:
     description: schedule pause status
     default: PAUSED
@@ -40,6 +41,7 @@ variables:
     default: "0.3.1"
   package_version:
     description: version of private package
+    default: "031"
 
 resources:
   jobs:
@@ -47,7 +49,7 @@ resources:
       name: ${bundle.name}-workflow-${var.branch}
       parameters:
         - name: is_test
-          default: "{{var.is_test}}"
+          default: 1
       schedule:
         quartz_cron_expression: "0 0 6 ? * MON"
         timezone_id: "Europe/Amsterdam"
@@ -160,21 +162,78 @@ resources:
             - whl: ./dist/*.whl
             - whl: /Volumes/mlops_prd/utils/package/marvelous-${var.marvelous_version}-py3-none-any.whl
 
-    # new_job:
-    #   name: ${bundle.name}-new-job-${var.branch}
-    #   tasks:
-    #   - task_key: Prep_models
-    #     for_each_task:
-    #       inputs: '[1, 0]'
-    #       concurrency: 2
-    #       task:
-    #         task_key: Prep_models_iteration
-    #         run_job_task:
-    #           job_id: 538670860073525
-    #           job_parameters:
-    #             is_test: "{{input}}"
-    #   queue:
-    #     enabled: true
+    model_by_country:
+      name: ${bundle.name}-model-by-country
+      parameters:
+        - name: country
+          default: "PL"
+      schedule:
+        quartz_cron_expression: "0 0 6 ? * MON"
+        timezone_id: "Europe/Amsterdam"
+        pause_status: ${var.schedule_pause_status}
+      tags:
+        project_name: "hotel-reservations"
+      job_clusters:
+        - job_cluster_key: "hotel-reservations-cluster"
+          new_cluster:
+            spark_version: "15.4.x-scala2.12"
+            data_security_mode: "SINGLE_USER"
+            node_type_id: "r3.xlarge"
+            driver_node_type_id: "r3.xlarge"
+            autoscale:
+              min_workers: 1
+              max_workers: 1
+            spark_env_vars:
+              "TOKEN_STATUS_CHECK": "{{secrets/mlops_course/git_token_status_check}}"
+      tasks:
+        - task_key: "preprocessing"
+          job_cluster_key: "hotel-reservations-cluster"
+          spark_python_task:
+            python_file: "scripts/06a.process_data_by_country.py"
+            parameters:
+              - "common"
+              - "--root_path"
+              - "${workspace.root_path}"
+              - "--env"
+              - "${var.env}"
+              - "--country"
+              - "{{job.parameters.country}}"
+          libraries:
+            - whl: ./dist/*.whl
+            - whl: /Volumes/mlops_prd/utils/package/marvelous-${var.marvelous_version}-py3-none-any.whl
+        - task_key: "train_model"
+          job_cluster_key: "hotel-reservations-cluster"
+          depends_on:
+            - task_key: "preprocessing"
+          spark_python_task:
+            python_file: "scripts/06b.train_register_model_by_country.py"
+            parameters:
+              - "common"
+              - "--root_path"
+              - "${workspace.root_path}"
+              - "--env"
+              - "${var.env}"
+              - "--country"
+              - "{{job.parameters.country}}"
+          libraries:
+            - whl: ./dist/*.whl
+            - whl: /Volumes/mlops_prd/utils/package/marvelous-${var.marvelous_version}-py3-none-any.whl
+
+    new_job:
+      name: ${bundle.name}-process-countries
+      tasks:
+      - task_key: process_modelling
+        for_each_task:
+          inputs: '["PL", "UK"]'
+          concurrency: 2
+          task:
+            task_key: Prep_models_iteration
+            run_job_task:
+              job_id: ${resources.jobs.model_by_country.id}
+              job_parameters:
+                country: "{{input}}"
+      queue:
+        enabled: true
 
   apps:
     inference_app:

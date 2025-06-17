@@ -94,3 +94,18 @@ def create_parser(args: Sequence[str] = None) -> argparse.Namespace:
     subparsers.add_parser("monitor", parents=[common_args], help="Monitoring options")
 
     return parser.parse_args(args)
+
+
+def create_parser_by_country(args: Sequence[str] = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Parser for MLOps on Databricks")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    # Wspólne argumenty
+    common_args = argparse.ArgumentParser(add_help=False)
+    common_args.add_argument("--env", type=str, required=True, help="Path of env file on DAB")
+    common_args.add_argument("--root_path", type=str, required=True, help="Path of root on DAB")
+    common_args.add_argument("--country", type=str, required=True, help="Select country to process")
+
+    subparsers.add_parser("common", parents=[common_args], help="Data ingestion options")
+
+    return parser.parse_args(args)
