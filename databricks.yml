@@ -7,7 +7,7 @@ bundle:
 
 include:
   - bundle_monitoring.yml
-  # - resources/*.yml
+# - resources/*.yml
 
 artifacts:
   default:
