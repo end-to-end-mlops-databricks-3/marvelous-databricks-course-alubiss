@@ -45,11 +45,15 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 #v5.4.1
 
+      - name: Read version from file
+        id: read_version
+        run: echo "VERSION=$(cat version.txt)" >> $GITHUB_ENV
+
       - name: Deploy to Databricks
         env:
           DATABRICKS_BUNDLE_ENV: ${{ matrix.environment }}
         run: |
-            databricks bundle deploy --var="git_sha=${{ github.sha }}" --var="branch=${{ github.ref_name }}" --var="package_version=$(cat version.txt)"
+            databricks bundle deploy --var="git_sha=${{ github.sha }}" --var="branch=${{ github.ref_name }}" --var="package_version=$VERSION"
             if [ "${{ matrix.environment }}" = "prd" ]; then
             echo "VERSION=$(cat version.txt)"
             git tag $VERSION
