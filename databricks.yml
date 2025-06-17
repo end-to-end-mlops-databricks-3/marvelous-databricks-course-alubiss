@@ -44,7 +44,7 @@ variables:
 resources:
   jobs:
     deployment:
-      name: ${bundle.name}-workflow-${var.package_version}
+      name: ${bundle.name}-workflow
       schedule:
         quartz_cron_expression: "0 0 6 ? * MON"
         timezone_id: "Europe/Amsterdam"
