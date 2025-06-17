@@ -47,7 +47,7 @@ feature_model_server = FeatureLookupServing(
 )
 
 # Create the online table for house features
-#feature_model_server.create_online_table()
+feature_model_server.create_online_table()
 
 # COMMAND ----------
 
