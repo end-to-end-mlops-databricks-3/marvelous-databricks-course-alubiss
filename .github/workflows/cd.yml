@@ -53,7 +53,7 @@ jobs:
         env:
           DATABRICKS_BUNDLE_ENV: ${{ matrix.environment }}
         run: |
-            databricks bundle deploy --var="git_sha=${{ github.sha }}" --var="branch=${{ github.ref_name }}" --var="package_version=$VERSION"
+            databricks bundle deploy --var="git_sha=${{ github.sha }}" --var="branch=${{ github.ref_name }}" --var="package_version=${{ env.VERSION }}"
             if [ "${{ matrix.environment }}" = "prd" ]; then
             echo "VERSION=$(cat version.txt)"
             git tag $VERSION
