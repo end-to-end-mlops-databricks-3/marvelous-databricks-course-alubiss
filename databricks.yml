@@ -44,7 +44,10 @@ variables:
 resources:
   jobs:
     deployment:
-      name: ${bundle.name}-workflow
+      name: ${bundle.name}-workflow-${var.branch}
+      parameters:
+        - name: is_test
+          default: "{{var.is_test}}"
       schedule:
         quartz_cron_expression: "0 0 6 ? * MON"
         timezone_id: "Europe/Amsterdam"
@@ -75,7 +78,7 @@ resources:
               - "--env"
               - "${var.env}"
               - "--is_test"
-              - "${var.is_test}"
+              - "{{job.parameters.is_test}}"
           libraries:
             - whl: ./dist/*.whl
             - whl: /Volumes/mlops_prd/utils/package/marvelous-${var.marvelous_version}-py3-none-any.whl
@@ -98,7 +101,7 @@ resources:
               - "--branch"
               - "${var.branch}"
               - "--is_test"
-              - "${var.is_test}"
+              - "{{job.parameters.is_test}}"
           libraries:
             - whl: ./dist/*.whl
             - whl: /Volumes/mlops_prd/utils/package/marvelous-${var.marvelous_version}-py3-none-any.whl
@@ -123,14 +126,14 @@ resources:
               - "--env"
               - "${var.env}"
               - "--is_test"
-              - "${var.is_test}"
+              - "{{job.parameters.is_test}}"
           libraries:
             - whl: ./dist/*.whl
             - whl: /Volumes/mlops_prd/utils/package/marvelous-${var.marvelous_version}-py3-none-any.whl
         - task_key: post_commit_status_required
           condition_task:
             op: "EQUAL_TO"
-            left: "${var.is_test}"
+            left: "{{job.parameters.is_test}}"
             right: "1"
           depends_on:
             - task_key: "deploy_model"
@@ -156,6 +159,22 @@ resources:
           libraries:
             - whl: ./dist/*.whl
             - whl: /Volumes/mlops_prd/utils/package/marvelous-${var.marvelous_version}-py3-none-any.whl
+
+    new_job:
+      name: ${bundle.name}-new-job-${var.branch}
+      tasks:
+      - task_key: Prep_models
+        for_each_task:
+          inputs: '[1, 0]'
+          concurrency: 2
+          task:
+            task_key: Prep_models_iteration
+            run_job_task:
+              job_id: 538670860073525
+              job_parameters:
+                is_test: "{{input}}"
+      queue:
+        enabled: true
 
   apps:
     inference_app:
