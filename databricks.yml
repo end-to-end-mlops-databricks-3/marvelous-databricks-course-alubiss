@@ -27,7 +27,6 @@ variables:
     default: end-to-end-mlops-databricks-3
   branch:
     description: branch
-    default: main
   schedule_pause_status:
     description: schedule pause status
     default: PAUSED
