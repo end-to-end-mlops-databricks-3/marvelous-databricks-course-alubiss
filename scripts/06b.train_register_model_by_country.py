@@ -1,7 +1,6 @@
 """Modeling Pipeline module."""
 
 from loguru import logger
-from pyspark.dbutils import DBUtils
 from pyspark.sql import SparkSession
 
 from hotel_reservations.common import create_parser_by_country
@@ -13,8 +12,8 @@ args = create_parser_by_country()
 root_path = args.root_path
 config_path = f"{root_path}/files/project_config.yml"
 config = ProjectConfig.from_yaml(config_path=config_path, env=args.env)
-
-tags_dict = {"git_sha": 'aaa', "branch": 'aaa', "job_run_id": '123'}
+spark = SparkSession.builder.getOrCreate()
+tags_dict = {"git_sha": "aaa", "branch": "aaa", "job_run_id": "123"}
 tags = Tags(**tags_dict)
 
 # Initialize model

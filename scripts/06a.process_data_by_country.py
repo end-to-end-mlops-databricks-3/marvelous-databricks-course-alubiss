@@ -11,7 +11,7 @@ sys.path.append(str(Path.cwd().parent / "src"))
 
 from hotel_reservations.common import create_parser_by_country
 from hotel_reservations.config import ProjectConfig
-from hotel_reservations.data_processor import DataProcessor, generate_synthetic_data, generate_test_data
+from hotel_reservations.data_processor import DataProcessor
 
 args = create_parser_by_country()
 

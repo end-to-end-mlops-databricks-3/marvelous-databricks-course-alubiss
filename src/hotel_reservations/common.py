@@ -97,6 +97,13 @@ def create_parser(args: Sequence[str] = None) -> argparse.Namespace:
 
 
 def create_parser_by_country(args: Sequence[str] = None) -> argparse.Namespace:
+    """Create and configure an argument parser for MLOps on Databricks.
+
+    This function sets up a parser with subparsers for different MLOps operations.
+
+    :param args: Optional sequence of command-line argument strings
+    :return: Parsed argument namespace
+    """
     parser = argparse.ArgumentParser(description="Parser for MLOps on Databricks")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
