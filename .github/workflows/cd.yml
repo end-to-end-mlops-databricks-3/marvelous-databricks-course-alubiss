@@ -57,6 +57,7 @@ jobs:
         env:
           DATABRICKS_BUNDLE_ENV: ${{ matrix.environment }}
           BUNDLE_VAR_package_version: ${{ steps.read_version.outputs.PACKAGE_VERSION }}
+          BUNDLE_VAR_branch: ${{ github.ref_name }}
         run: |
             databricks bundle deploy --var="git_sha=${{ github.sha }}"
             if [ "${{ matrix.environment }}" = "prd" ]; then

@@ -86,9 +86,10 @@ jobs:
         env:
           DATABRICKS_BUNDLE_ENV: test
           BUNDLE_VAR_package_version: ${{ steps.read_version.outputs.PACKAGE_VERSION }}
+          BUNDLE_VAR_branch: ${{ github.ref_name }}
         run: |
             full_repo="${{ github.repository }}"
             repo_name="${full_repo##*/}"
             org_name="${full_repo%%/*}"
-            databricks bundle deploy --var="git_sha=${{ github.sha }}" --var="repo=${repo_name}" --var="org=${org_name}" --var="branch=${{ github.ref_name }}"
+            databricks bundle deploy --var="git_sha=${{ github.sha }}" --var="repo=${repo_name}" --var="org=${org_name}"
             databricks bundle run deployment --no-wait
