@@ -5,6 +5,10 @@
 bundle:
   name: marvelous-databricks-course-alubiss
 
+include:
+  - bundle_monitoring.yml
+  - resources/*.yml
+
 artifacts:
   default:
     type: whl
