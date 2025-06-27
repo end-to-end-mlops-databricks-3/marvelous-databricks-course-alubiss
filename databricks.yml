@@ -235,11 +235,11 @@ resources:
       queue:
         enabled: true
 
-  apps:
-    inference_app:
-      name: test${var.package_version}
-      source_code_path: ./app
-      description: "A Streamlit app for ML inference on Databricks"
+  # apps:
+  #   inference_app:
+  #     name: model_application${var.package_version}
+  #     source_code_path: ./app
+  #     description: "A Streamlit app for ML inference on Databricks"
 
 targets:
   dev:
