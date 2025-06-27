@@ -164,6 +164,35 @@ class PocessModeling:
         self.banned_client_df = pd.DataFrame({"banned_clients_ids": self.banned_clients_ids})
         logger.info("✅ Data successfully loaded.")
 
+    def load_data_by_country(self, country: str) -> None:
+        """Load training and testing data from Delta tables.
+
+        This method loads data from Databricks tables and splits it into features and target variables.
+        """
+        logger.info("🔄 Loading data from Databricks tables...")
+        self.train_set_spark = self.spark.table(f"{self.catalog_name}.{self.schema_name}.train_set_{country}")
+        self.train_set = self.train_set_spark.toPandas().drop(columns=["update_timestamp_utc"], errors="ignore")
+        self.test_set = (
+            self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set_{country}")
+            .toPandas()
+            .drop(columns=["update_timestamp_utc"], errors="ignore")
+        )
+        self.data_version = "0"  # describe history -> retrieve
+
+        self.X_train = self.train_set[
+            self.num_features + self.cat_features + self.date_features + ["Client_ID", "Booking_ID"]
+        ]
+        self.y_train = self.train_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
+        self.X_test = self.test_set[
+            self.num_features + self.cat_features + self.date_features + ["Client_ID", "Booking_ID"]
+        ]
+        self.y_test = self.test_set[self.target].map({"Not_Canceled": 0, "Canceled": 1})
+        self.train_set = self.train_set.drop(columns=[self.target])
+        self.test_set = self.test_set.drop(columns=[self.target])
+
+        self.banned_client_df = pd.DataFrame({"banned_clients_ids": self.banned_clients_ids})
+        logger.info("✅ Data successfully loaded.")
+
     def prepare_features(self) -> None:
         """Feature engineering and preprocessing."""
         logger.info("🔄 Defining preprocessing pipeline...")
